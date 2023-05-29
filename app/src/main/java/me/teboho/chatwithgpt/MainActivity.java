@@ -87,9 +87,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (json.length() > 2800)
-                json = "{\n"
-                        +"  \"model\": \"gpt-3.5-turbo\",\n \"messages\": ["
-                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
+            {
+                runOnUiThread(() -> binding.chatInput.setError("Input too long"));
+                return;
+            }
             System.out.println(json);
 
             String url = "https://api.openai.com/v1/chat/completions";
