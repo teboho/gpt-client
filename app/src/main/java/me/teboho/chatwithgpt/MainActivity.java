@@ -86,6 +86,10 @@ public class MainActivity extends AppCompatActivity {
                         +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
             }
 
+            if (json.length() > 2800)
+                json = "{\n"
+                        +"  \"model\": \"gpt-3.5-turbo\",\n \"messages\": ["
+                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
             System.out.println(json);
 
             String url = "https://api.openai.com/v1/chat/completions";
