@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void handleSendButton(View view) {
+        // Show loading indicator
+        binding.progressBar.setVisibility(View.VISIBLE);
         new Thread(() -> {
             final MediaType JSON
                     = MediaType.get("application/json; charset=utf-8");
@@ -101,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
                     .post(body)
                     .build();
             try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    runOnUiThread(() -> binding.chatInput.setError("Something went wrong"));
+                    throw new IOException("Unexpected code " + response);
+                }
+                binding.progressBar.setVisibility(View.INVISIBLE);
+
                 String res = response.body().string();
                 System.out.println("Response: \n" + res);
 
