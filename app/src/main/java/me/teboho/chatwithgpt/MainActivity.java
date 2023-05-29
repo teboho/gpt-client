@@ -71,13 +71,14 @@ public class MainActivity extends AppCompatActivity {
                     "  \"model\": \"gpt-3.5-turbo\",\n  \"messages\": [";
 
             if (viewModel.getInHistory().getValue().size() > 0) {
-                for (int i=0; i<viewModel.getLength().getValue(); i++) {
+                for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
                     json += "{\"role\": \"user\", \"content\": \"" + viewModel.getInHistory().getValue().get(i) +"\"}, ";
                     json += "{\"role\": \"assistant\", \"content\": \"" + viewModel.getOutHistory().getValue().get(i) +"\"}";
                     if (i != viewModel.getInHistory().getValue().size() - 1) {
                         json += ",";
                     }
                 }
+                json += ",{\"role\": \"user\", \"content\": \"" + chat +"\"}";
                 json += "]\n}";
             } else {
                 json = "{\n" +
