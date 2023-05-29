@@ -2,6 +2,14 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.ChatWithGPT" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">#D21312</item>
+        <item name="colorPrimaryVariant">#ED2B2A</item>
+        <item name="colorOnPrimary">#070A52</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#9C254D</item>
+        <item name="colorSecondaryVariant">#D23369</item>
+        <item name="colorOnSecondary">#2A3990</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 </resources>
