@@ -1,6 +1,7 @@
 package me.teboho.chatwithgpt;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -29,6 +30,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
     String OPENAI_API_KEY = "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";
     ActivityMainBinding binding;
+    Thread t;
 
     MainViewModel viewModel = new MainViewModel();
 
@@ -38,25 +40,39 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.chatOutput.setMovementMethod(new ScrollingMovementMethod());
+        // binding.chatOutput.setMovementMethod(new ScrollingMovementMethod());
+//
+//        viewModel.getChatOutput().observe(this, chatOutput -> {
+//            binding.chatOutput.setText(chatOutput);
+//        });
 
-        viewModel.getChatOutput().observe(this, chatOutput -> {
-            binding.chatOutput.setText(chatOutput);
-        });
+        ChatsAdapter adapter = new ChatsAdapter(viewModel);
+        binding.chatsRecyclerView.setAdapter(adapter);
+//        viewModel.getOutHistory().observe(this, outHistory -> {
+//            adapter.notifyDataSetChanged();
+//        });
+//        viewModel.getInHistory().observe(this, inHistory -> {
+//            adapter.notifyDataSetChanged();
+//        });
+
+        binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     public void handleResetButton(View view){
+        t.interrupt();
+        binding.progressBar.setVisibility(View.GONE);
         binding.chatInput.clearComposingText();
         viewModel.getChatInput().setValue("");
         viewModel.getChatOutput().setValue("");
         viewModel.getInHistory().getValue().clear();
         viewModel.getOutHistory().getValue().clear();
+        binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
     }
 
     public void handleSendButton(View view) {
         // Show loading indicator
         binding.progressBar.setVisibility(View.VISIBLE);
-        new Thread(() -> {
+        t = new Thread(() -> {
             final MediaType JSON
                     = MediaType.get("application/json; charset=utf-8");
 
@@ -107,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(() -> binding.chatInput.setError("Something went wrong"));
                     throw new IOException("Unexpected code " + response);
                 }
-                binding.progressBar.setVisibility(View.INVISIBLE);
+                runOnUiThread(() -> binding.progressBar.setVisibility(View.GONE));
 
                 String res = response.body().string();
                 System.out.println("Response: \n" + res);
@@ -132,9 +148,11 @@ public class MainActivity extends AppCompatActivity {
                 storeOutput(message);
 
             } catch (IOException e) {
+                runOnUiThread(() -> binding.chatInput.setError("Something went wrong with the internet request/response"));
                 e.printStackTrace();
             }
-        }, "chat").start();
+        }, "chat");
+        t.start();
     }
 
     private void showResponse(String response) {
@@ -155,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
             viewModel.getOutHistory().getValue().add(output);
 
             viewModel.getLength().setValue(viewModel.getLength().getValue() + 1);
+            binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
         });
     }
 }
