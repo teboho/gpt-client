@@ -3,12 +3,14 @@ package me.teboho.chatwithgpt;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.material.snackbar.Snackbar;
 import com.theokanning.openai.OpenAiResponse;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
@@ -30,7 +32,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     // exposing the API key is not a good practice, but this is just a demo
-    String OPENAI_API_KEY = "OPENAI_API_KEY";
+    String OPENAI_API_KEY = "";
     ActivityMainBinding binding;
     Thread t;
 
@@ -61,7 +63,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void handleResetButton(View view){
-        t.interrupt();
+        if (t != null && t.isAlive()) {
+            t.interrupt();
+            t = null;
+        }
+
         binding.progressBar.setVisibility(View.GONE);
         binding.chatInput.clearComposingText();
         viewModel.getChatInput().setValue("");
@@ -111,9 +117,12 @@ public class MainActivity extends AppCompatActivity {
                         +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
             }
 
-            if (json.length() > 2800)
+            if (json.length() > 2048)
             {
-                runOnUiThread(() -> binding.chatInput.setError("Input too long"));
+                runOnUiThread(() -> {
+                    showSnackbar("Message too long\nResetting history...");
+                    handleResetButton(view);
+                });
                 return;
             }
             System.out.println(json);
@@ -127,9 +136,12 @@ public class MainActivity extends AppCompatActivity {
                     .build();
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
-                    runOnUiThread(() -> binding.chatInput.setError("Something went wrong"));
-                    throw new IOException("Unexpected code " + response);
-                }
+                    runOnUiThread(() -> {
+                        showSnackbar("History data too large\nResetting...You have to start over, sorry :(");
+                        handleResetButton(view);
+                    });
+                } else runOnUiThread(() -> binding.chatInput.setError(null));
+                runOnUiThread(() -> binding.chatInput.setError(null));
                 runOnUiThread(() -> binding.progressBar.setVisibility(View.GONE));
 
                 String res = response.body().string();
@@ -173,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void storeOutput(String output) {
         runOnUiThread(() -> {
+
             viewModel.getChatOutput().setValue(output);
 
             // Store the chat in the chat history
@@ -182,5 +195,9 @@ public class MainActivity extends AppCompatActivity {
             viewModel.getLength().setValue(viewModel.getLength().getValue() + 1);
             binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
         });
+    }
+
+    public void showSnackbar(String message) {
+        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.GREEN).show();
     }
 }
