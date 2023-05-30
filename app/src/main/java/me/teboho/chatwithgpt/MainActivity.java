@@ -18,6 +18,7 @@ import com.theokanning.openai.service.OpenAiService;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import me.teboho.chatwithgpt.databinding.ActivityMainBinding;
@@ -77,7 +78,12 @@ public class MainActivity extends AppCompatActivity {
             final MediaType JSON
                     = MediaType.get("application/json; charset=utf-8");
 
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.connectTimeout(5, TimeUnit.MINUTES) // connect timeout
+                    .writeTimeout(5, TimeUnit.MINUTES) // write timeout
+                    .readTimeout(5, TimeUnit.MINUTES); // read timeout
+
+            OkHttpClient client = builder.build();
 
             String chat = binding.chatInput.getText().toString();
             if (chat.isEmpty() || chat == null) {
