@@ -25,6 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="User"
+            android:textIsSelectable="false"
             android:textStyle="bold|italic" />
 
         <TextView
@@ -33,9 +34,11 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:fontFamily="sans-serif-condensed"
+            android:minHeight="48dp"
             android:text="User chat inputted"
             android:textAllCaps="false"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:textIsSelectable="true"
             android:typeface="normal" />
     </LinearLayout>
 
@@ -64,8 +67,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:fontFamily="sans-serif-condensed"
+            android:minHeight="48dp"
             android:text="Assistand chat out put"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:textIsSelectable="true"
             android:typeface="normal" />
     </LinearLayout>
 </LinearLayout>
