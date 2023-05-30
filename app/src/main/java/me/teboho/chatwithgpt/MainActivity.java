@@ -28,6 +28,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
+    // exposing the API key is not a good practice, but this is just a demo
     String OPENAI_API_KEY = "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";
     ActivityMainBinding binding;
     Thread t;
