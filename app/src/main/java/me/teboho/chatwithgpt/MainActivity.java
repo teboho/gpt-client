@@ -32,6 +32,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+/**
+ * This is the main activity of the app
+ * It handles the UI and the logic of the app
+ * @author teboho
+ */
 public class MainActivity extends AppCompatActivity {
     // exposing the API key is not a good practice, but this is just a demo
     String OPENAI_API_KEY = "";
@@ -71,6 +76,11 @@ public class MainActivity extends AppCompatActivity {
         binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
     }
 
+    /**
+     * This method is called when the send button is clicked
+     * @param view the view that was clicked
+     * @author teboho
+     */
     public void handleSendButton(View view) {
         // Show loading indicator
         binding.progressBar.setVisibility(View.VISIBLE);
@@ -181,10 +191,18 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> viewModel.getChatOutput().setValue(response + "\n"));
     }
 
+    /**
+     * This method stores the input in the view model
+     * @param input the input to store in the view model
+     */
     private void storeInput(String input) {
         runOnUiThread(() -> viewModel.getChatInput().setValue(input));
     }
 
+    /**
+     * This method stores the output in the view model
+     * @param output the output to store in the view model
+     */
     private void storeOutput(String output) {
         runOnUiThread(() -> {
 
@@ -202,6 +220,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * This method shows a snackbar with the given message
+     * @param message the message to show in the snackbar
+     */
     public void showSnackbar(String message) {
         Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.GREEN).show();
     }

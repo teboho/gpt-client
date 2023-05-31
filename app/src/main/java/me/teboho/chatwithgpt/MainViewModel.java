@@ -7,6 +7,15 @@ import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is the viewmodel for the main activity
+ * It holds the data that is used by the main activity
+ * It is also responsible for updating the data
+ * It is also responsible for updating the UI
+ * @see MainActivity
+ * @see ChatsAdapter
+ * @author teboho
+ */
 public class MainViewModel extends ViewModel {
     private MutableLiveData<String> chatInput = new MutableLiveData<String>();
     private MutableLiveData<String> chatOutput = new MutableLiveData<String>();

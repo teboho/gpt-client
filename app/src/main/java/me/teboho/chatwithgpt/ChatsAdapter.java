@@ -9,6 +9,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+/**
+ * This is the adapter for the recyclerview
+ * It handles the logic of the recyclerview
+ * It is used to populate the recyclerview with data
+ * It is used to create the viewholder
+ * @see me.teboho.chatwithgpt.MainActivity
+ * @see me.teboho.chatwithgpt.MainViewModel
+ * @author teboho
+ */
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
     @NonNull
     @Override
