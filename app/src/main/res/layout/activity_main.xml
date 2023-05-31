@@ -15,9 +15,12 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="#0288D1"
+        app:layout_constraintBottom_toTopOf="@+id/btnSend"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chatTitle">
+        app:layout_constraintTop_toBottomOf="@+id/chatsRecyclerView">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/chatInput"
@@ -26,9 +29,9 @@
             android:enabled="true"
             android:hint="Enter your request"
             android:maxLines="10"
-            android:minLines="3"
+            android:minLines="2"
             android:textColor="#2979FF"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:typeface="sans" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -36,10 +39,14 @@
         android:id="@+id/chatTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:layout_marginBottom="8dp"
+        android:fontFamily="@font/alata"
         android:text="Chat With GPT"
+        android:textColor="?colorPrimary"
         android:textSize="24sp"
+        android:textStyle="bold"
+        android:typeface="normal"
         app:layout_constraintBottom_toTopOf="@+id/chatInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -77,14 +84,14 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="8dp"
         android:scrollbars="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/btnSend"
+        app:layout_constraintBottom_toTopOf="@+id/chatInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chatInputLayout" >
+        app:layout_constraintTop_toBottomOf="@+id/chatTitle">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -93,7 +100,7 @@
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:indeterminateTint="#C6FF00"
+        android:indeterminateTint="#E64A19"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

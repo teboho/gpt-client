@@ -18,6 +18,8 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.service.OpenAiService;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +34,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     // exposing the API key is not a good practice, but this is just a demo
-    String OPENAI_API_KEY = "OPENAI_API_KEY";
+    String OPENAI_API_KEY = "";
     ActivityMainBinding binding;
     Thread t;
 
@@ -44,22 +46,14 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // binding.chatOutput.setMovementMethod(new ScrollingMovementMethod());
-//
-//        viewModel.getChatOutput().observe(this, chatOutput -> {
-//            binding.chatOutput.setText(chatOutput);
-//        });
+        // binding.chatOutput.setMovementMethod(new ScrollingMovementMethod()); //make textview scrollable
 
         ChatsAdapter adapter = new ChatsAdapter(viewModel);
         binding.chatsRecyclerView.setAdapter(adapter);
-//        viewModel.getOutHistory().observe(this, outHistory -> {
-//            adapter.notifyDataSetChanged();
-//        });
-//        viewModel.getInHistory().observe(this, inHistory -> {
-//            adapter.notifyDataSetChanged();
-//        });
 
         binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // scroll to bottom of recyclerview
+        binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount() - 1);
     }
 
     public void handleResetButton(View view){
@@ -99,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 storeInput(chat);
 
             String json = "{\n" +
-                    "  \"model\": \"gpt-3.5-turbo\",\n  \"messages\": [";
+                    "  \"model\": \"gpt-3.5-turbo-0301\",\n  \"messages\": [";
 
             if (viewModel.getInHistory().getValue().size() > 0) {
                 for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
@@ -111,23 +105,29 @@ public class MainActivity extends AppCompatActivity {
                 }
                 json += ",{\"role\": \"user\", \"content\": \"" + chat +"\"}";
                 json += "]\n}";
-            } else {
+            }
+            else if (json.length() > 3900) {
+                runOnUiThread(() -> {
+                    showSnackbar("History data too large\nSending request without history...");
+                    handleResetButton(view);
+                    handleSendButton(view);
+                });
+                storeInput(binding.chatInput.getText().toString());
                 json = "{\n" +
-                        "  \"model\": \"gpt-3.5-turbo\",\n \"messages\": ["
+                        "  \"model\": \"gpt-3.5-turbo-0301\",\n \"messages\": ["
+                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
+            }
+            else {
+                json = "{\n" +
+                        "  \"model\": \"gpt-3.5-turbo-0301\",\n \"messages\": ["
                         +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
             }
 
-            if (json.length() > 2048)
-            {
-                runOnUiThread(() -> {
-                    showSnackbar("Message too long\nResetting history...");
-                    handleResetButton(view);
-                });
-                return;
-            }
             System.out.println(json);
 
             String url = "https://api.openai.com/v1/chat/completions";
+            json = json.replace("\n", " "); // json cannot contain newlines
+
             RequestBody body = RequestBody.create(json, JSON);
             Request request = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
@@ -135,17 +135,19 @@ public class MainActivity extends AppCompatActivity {
                     .post(body)
                     .build();
             try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful()) {
+                String res = response.body().string();
+                System.out.println("Response: \n" + res);
+
+                if (!response.isSuccessful() || res.contains("error")) {
                     runOnUiThread(() -> {
-                        showSnackbar("History data too large\nResetting...You have to start over, sorry :(");
+                        showSnackbar("History data too large\nResetting... Sending request without history, sorry :(");
                         handleResetButton(view);
+                        handleSendButton(view);
                     });
+                    return;
                 } else runOnUiThread(() -> binding.chatInput.setError(null));
                 runOnUiThread(() -> binding.chatInput.setError(null));
                 runOnUiThread(() -> binding.progressBar.setVisibility(View.GONE));
-
-                String res = response.body().string();
-                System.out.println("Response: \n" + res);
 
                 // Break down the response json
                 ObjectMapper mapper = new ObjectMapper();
@@ -194,6 +196,9 @@ public class MainActivity extends AppCompatActivity {
 
             viewModel.getLength().setValue(viewModel.getLength().getValue() + 1);
             binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
+
+            // Scroll to the bottom of the recycler view
+            binding.chatsRecyclerView.smoothScrollToPosition(viewModel.getLength().getValue() - 1);
         });
     }
 
