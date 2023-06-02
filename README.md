@@ -2,6 +2,9 @@
 GPT Android FrontEnd  
 Usage via android studio will require that you enter own api key in the main file in order to talk to the Open AI API 
 
+# Installer
+[Click here to install to android](https://github.com/teboho/chatgpt-client/releases/download/installer/app-debug.apk)
+
 ## Screenshot  
 
 <!-- Change these markdown image refs to html -->
