@@ -1,6 +1,6 @@
-# chatgpt-client
+# Chat With GPT
 GPT Android FrontEnd  
-Actual usage will require that you enter own api key in the main file in order to talk to the Open AI API 
+Usage via android studio will require that you enter own api key in the main file in order to talk to the Open AI API 
 
 ## Screenshot  
 
@@ -11,3 +11,5 @@ Actual usage will require that you enter own api key in the main file in order t
 
 > Added icons from
 > https://dribbble.com/shots/8934409-Diversity-Avatars
+
+> &copy; 2023 teboho
