@@ -5,9 +5,8 @@ Usage via android studio will require that you enter own api key in the main fil
 # Installer
 [Click here to install to android](https://github.com/teboho/chatgpt-client/releases/download/installer/app-debug.apk)
 
-## Screenshot  
+## Screenshots
 
-<!-- Change these markdown image refs to html -->
 <img src="Screenshot_20230602_224035.png" width="200" height="400" alt="Screenshot1" /> <img src="Screenshot_20230602_224044.png" width="200" height="400" alt="Screenshot2" />  
 
 <img src="Screenshot_20230602_224056.png" width="200" height="400" alt="Screenshot3" /> <img src="Screenshot_20230602_224312.png" width="200" height="400" alt="Screenshot4" />  
