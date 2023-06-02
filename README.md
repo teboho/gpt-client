@@ -4,12 +4,13 @@ Usage via android studio will require that you enter own api key in the main fil
 
 ## Screenshot  
 
-![Screenshot 1](Screenshot_20230602_224035.png)
-![Screenshot 2](Screenshot_20230602_224044.png)  
-![Screenshot 3](Screenshot_20230602_224056.png)
-![Screenshot 4](Screenshot_20230602_224312.png)  
+<!-- Change these markdown image refs to html -->
+<img src="Screenshot_20230602_224035.png" width="200" height="400" alt="Screenshot1" />
+<img src="Screenshot_20230602_224044.png" width="200" height="400" alt="Screenshot2" />  
 
-> Added icons from
-> https://dribbble.com/shots/8934409-Diversity-Avatars
+<img src="Screenshot_20230602_224056.png" width="200" height="400" alt="Screenshot3" />
+<img src="Screenshot_20230602_224312.png" width="200" height="400" alt="Screenshot4" />  
+
+> Added icons from https://dribbble.com/shots/8934409-Diversity-Avatars
 
 > &copy; 2023 teboho
