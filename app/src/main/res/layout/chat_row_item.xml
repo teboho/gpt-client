@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <LinearLayout
+    <androidx.cardview.widget.CardView
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,33 +17,44 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="?attr/colorSecondary"
-        android:orientation="vertical"
-        android:padding="5dp">
+        android:padding="5dp"
+        app:cardBackgroundColor="?attr/colorSecondary"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:contentPadding="8dp">
 
-        <TextView
-            android:id="@+id/inUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="User"
-            android:textIsSelectable="false"
-            android:textStyle="bold|italic" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/chatByUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:fontFamily="sans-serif-condensed"
-            android:minHeight="48dp"
-            android:text="User chat inputted"
-            android:textAllCaps="false"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:textColor="@color/black"
-            android:textIsSelectable="true"
-            android:typeface="normal" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/inUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|top"
+                android:text="User"
+                android:textIsSelectable="false"
+                android:textStyle="bold|italic" />
 
-    <LinearLayout
+            <TextView
+                android:id="@+id/chatByUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right|end"
+                android:fontFamily="sans-serif-condensed"
+                android:minHeight="48dp"
+                android:text="User chat inputted"
+                android:textAllCaps="false"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textColor="@color/black"
+                android:textIsSelectable="true"
+                android:typeface="normal" />
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -52,27 +63,38 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="?attr/colorSecondaryVariant"
-        android:orientation="vertical"
-        android:padding="5dp">
+        android:padding="5dp"
+        app:cardBackgroundColor="?attr/colorSecondaryVariant"
+        app:cardCornerRadius="16dp"
+        app:contentPadding="8dp">
 
-        <TextView
-            android:id="@+id/outAssistant"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Assistant"
-            android:textStyle="bold|italic" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/chatByAssistant"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:fontFamily="sans-serif-condensed"
-            android:minHeight="48dp"
-            android:text="Assistand chat out put"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:textColor="@color/black"
-            android:textIsSelectable="true"
-            android:typeface="normal" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/outAssistant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|top"
+                android:text="Assistant"
+                android:textStyle="bold|italic" />
+
+            <TextView
+                android:id="@+id/chatByAssistant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:fontFamily="sans-serif-condensed"
+                android:minHeight="48dp"
+                android:text="Assistand chat out put"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textColor="@color/black"
+                android:textIsSelectable="true"
+                android:typeface="normal" />
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
 </LinearLayout>

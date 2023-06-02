@@ -1,5 +1,6 @@
 package me.teboho.chatwithgpt;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -8,7 +9,10 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     String OPENAI_API_KEY = "OPENAI_API_KEY";
     String model = "gpt-3.5-turbo";
     ActivityMainBinding binding;
+    ActionBarDrawerToggle toggle; // Toggle button for the drawer
     Thread t;
 
     MainViewModel viewModel = new MainViewModel();
@@ -53,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // set the toolbar as the action bar of the activity to support using the action bar toggle to pull out the drawer layout for menu
+        setSupportActionBar(binding.toolbar);
+        toggle = new ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar, R.string.open, R.string.close);
+        binding.drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
         // binding.chatOutput.setMovementMethod(new ScrollingMovementMethod()); //make textview scrollable
 
@@ -64,22 +75,28 @@ public class MainActivity extends AppCompatActivity {
         binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount() - 1);
 
         // switch to dark mode
-        binding.modeSwitch.setOnClickListener(l -> {
-            // get the current state of the switch
-            boolean isChecked = binding.modeSwitch.isChecked();
-            if (isChecked) {
-                showSnackbar("Dark mode enabled\nHistory will be cleared");
-                // change the theme to dark mode juat using theme files
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                // refresh the recyclerview
-//                viewModel = new MainViewModel(viewModel);
-            } else {
-                showSnackbar("Light mode enabled\nHistory will be cleared");
-                // change theme to light
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                // refresh the recyclerview
-            }
-        });
+//        binding.modeSwitch.setOnClickListener(l -> {
+//            // get the current state of the switch
+//            boolean isChecked = binding.modeSwitch.isChecked();
+//            if (isChecked) {
+//                showSnackbar("Dark mode enabled\nHistory will be cleared");
+//                // change the theme to dark mode juat using theme files
+//                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+//
+//            } else {
+//                showSnackbar("Light mode enabled\nHistory will be cleared");
+//                // change theme to light
+//                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+//            }
+//        });
+    }
+
+    // overriding the onCreateOptions menu to inflate the menu also into the toolbar default menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.drawer_menu, menu);
+        return true;
     }
 
     public void handleResetButton(View view){
@@ -123,23 +140,23 @@ public class MainActivity extends AppCompatActivity {
             } else
                 storeInput(binding.chatInput.getText().toString());
 
-            String json = "{\n" +
-                    "  \"model\": \""+ model +"\",\n  \"messages\": [";
+            String json = "{\"model\": \""+ model +"\",\n  \"messages\": [";
 
             if (viewModel.getInHistory().getValue().size() > 0) {
                 for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
                     json += "{\"role\": \"user\", \"content\": \"" + viewModel.getInHistory().getValue().get(i) +"\"}, ";
                     json += "{\"role\": \"assistant\", \"content\": \"" + viewModel.getOutHistory().getValue().get(i) +"\"}";
+                    // add comma if not last element
                     if (i != viewModel.getInHistory().getValue().size() - 1) {
                         json += ",";
                     }
                 }
                 json += ",{\"role\": \"user\", \"content\": \"" + binding.chatInput.getText().toString() +"\"}";
-                json += "]\n}";
+                json += "]}";
             }
             else if (json.length() > 3900) {
                 runOnUiThread(() -> {
-                    showSnackbar("History data too large\nSending request without history...");
+                    showSnackbar("History data too large\nClearing history...");
                     handleResetButton(view);
                     handleSendButton(view);
                 });
@@ -171,13 +188,14 @@ public class MainActivity extends AppCompatActivity {
 
                 if (!response.isSuccessful() || res.contains("error")) {
                     runOnUiThread(() -> {
+                        showSnackbar("Error: " + res);
                         showSnackbar("History data too large\nResetting... Sending request without history, sorry :(");
                         handleResetButton(view);
                         handleSendButton(view);
                     });
                     return;
-                } else runOnUiThread(() -> binding.chatInput.setError(null));
-                runOnUiThread(() -> binding.chatInput.setError(null));
+                } else
+                    runOnUiThread(() -> binding.chatInput.setError(null));
                 runOnUiThread(() -> binding.progressBar.setVisibility(View.GONE));
 
                 // Break down the response json
@@ -204,11 +222,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }, "chat");
         t.start();
-    }
-
-    private void showResponse(String response) {
-        System.out.println(response);
-        runOnUiThread(() -> viewModel.getChatOutput().setValue(response + "\n"));
     }
 
     /**
@@ -244,7 +257,6 @@ public class MainActivity extends AppCompatActivity {
      * @param message the message to show in the snackbar
      */
     public void showSnackbar(String message) {
-        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.GREEN).show();
+        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.BLUE).show();
     }
-
 }
