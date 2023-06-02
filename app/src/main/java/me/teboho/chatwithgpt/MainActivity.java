@@ -1,8 +1,10 @@
 package me.teboho.chatwithgpt;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -39,7 +41,8 @@ import okhttp3.Response;
  */
 public class MainActivity extends AppCompatActivity {
     // exposing the API key is not a good practice, but this is just a demo
-    String OPENAI_API_KEY = "";
+    String OPENAI_API_KEY = "OPENAI_API_KEY";
+    String model = "gpt-3.5-turbo";
     ActivityMainBinding binding;
     Thread t;
 
@@ -59,6 +62,24 @@ public class MainActivity extends AppCompatActivity {
         binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         // scroll to bottom of recyclerview
         binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount() - 1);
+
+        // switch to dark mode
+        binding.modeSwitch.setOnClickListener(l -> {
+            // get the current state of the switch
+            boolean isChecked = binding.modeSwitch.isChecked();
+            if (isChecked) {
+                showSnackbar("Dark mode enabled\nHistory will be cleared");
+                // change the theme to dark mode juat using theme files
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                // refresh the recyclerview
+//                viewModel = new MainViewModel(viewModel);
+            } else {
+                showSnackbar("Light mode enabled\nHistory will be cleared");
+                // change theme to light
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                // refresh the recyclerview
+            }
+        });
     }
 
     public void handleResetButton(View view){
@@ -100,10 +121,10 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> binding.chatInput.setError("Please enter something"));
                 return;
             } else
-                storeInput(chat);
+                storeInput(binding.chatInput.getText().toString());
 
             String json = "{\n" +
-                    "  \"model\": \"gpt-3.5-turbo-0301\",\n  \"messages\": [";
+                    "  \"model\": \""+ model +"\",\n  \"messages\": [";
 
             if (viewModel.getInHistory().getValue().size() > 0) {
                 for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
@@ -113,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                         json += ",";
                     }
                 }
-                json += ",{\"role\": \"user\", \"content\": \"" + chat +"\"}";
+                json += ",{\"role\": \"user\", \"content\": \"" + binding.chatInput.getText().toString() +"\"}";
                 json += "]\n}";
             }
             else if (json.length() > 3900) {
@@ -124,13 +145,13 @@ public class MainActivity extends AppCompatActivity {
                 });
                 storeInput(binding.chatInput.getText().toString());
                 json = "{\n" +
-                        "  \"model\": \"gpt-3.5-turbo-0301\",\n \"messages\": ["
-                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
+                        "  \"model\": \""+ model +"\",\n \"messages\": ["
+                        +  "{\"role\": \"user\", \"content\": \"" + binding.chatInput.getText().toString() +"\"}]\n}";
             }
             else {
                 json = "{\n" +
-                        "  \"model\": \"gpt-3.5-turbo-0301\",\n \"messages\": ["
-                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
+                        "  \"model\": \""+ model + "\",\n \"messages\": ["
+                        +  "{\"role\": \"user\", \"content\": \"" + binding.chatInput.getText().toString() +"\"}]\n}";
             }
 
             System.out.println(json);
@@ -175,11 +196,10 @@ public class MainActivity extends AppCompatActivity {
                 String message = choicesNode.get(0).get("message").get("content").asText();
                 String finishReason = choicesNode.get(0).get("finish_reason").asText();
 
-                //showResponse(message);
                 storeOutput(message);
-
             } catch (IOException e) {
                 runOnUiThread(() -> binding.chatInput.setError("Something went wrong with the internet request/response"));
+                runOnUiThread(() -> showSnackbar("Something went wrong with the internet request/response" + e.getMessage()));
                 e.printStackTrace();
             }
         }, "chat");
@@ -205,15 +225,14 @@ public class MainActivity extends AppCompatActivity {
      */
     private void storeOutput(String output) {
         runOnUiThread(() -> {
-
             viewModel.getChatOutput().setValue(output);
 
             // Store the chat in the chat history
-            viewModel.getInHistory().getValue().add(binding.chatInput.getText().toString());
+            viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
             viewModel.getOutHistory().getValue().add(output);
 
             viewModel.getLength().setValue(viewModel.getLength().getValue() + 1);
-            binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
+            binding.chatsRecyclerView.getAdapter().notifyItemChanged(viewModel.getLength().getValue() - 1);
 
             // Scroll to the bottom of the recycler view
             binding.chatsRecyclerView.smoothScrollToPosition(viewModel.getLength().getValue() - 1);
@@ -227,4 +246,5 @@ public class MainActivity extends AppCompatActivity {
     public void showSnackbar(String message) {
         Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.GREEN).show();
     }
+
 }

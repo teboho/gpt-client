@@ -31,6 +31,14 @@ public class MainViewModel extends ViewModel {
         outHistory.setValue(new ArrayList<String>());
     }
 
+    public MainViewModel(MainViewModel vm) {
+        chatInput.setValue(vm.getChatInput().getValue());
+        chatOutput.setValue(vm.getChatOutput().getValue());
+        length.setValue(vm.getLength().getValue());
+        inHistory.setValue(vm.getInHistory().getValue());
+        outHistory.setValue(vm.getOutHistory().getValue());
+    }
+
     // There needs to be accessors for the mutable live data so that they can be observed
     public MutableLiveData<String> getChatInput() {
         return chatInput;
