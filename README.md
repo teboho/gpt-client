@@ -4,7 +4,7 @@ Usage via android studio will require that you enter own api key in the main fil
 
 *This project is partly an experiment, as such, development is ongoing*
 
-### Installer
+## Installer
 [Click here to install to android](https://github.com/teboho/chatgpt-client/releases/download/installer/app-debug.apk)
 
 ## Screenshots
