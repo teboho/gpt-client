@@ -32,6 +32,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        // enable buildConfig generation
         buildConfig true
     }
     
