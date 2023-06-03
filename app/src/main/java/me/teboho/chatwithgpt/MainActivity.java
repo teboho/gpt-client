@@ -1,5 +1,6 @@
 package me.teboho.chatwithgpt;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -11,11 +12,13 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.theokanning.openai.OpenAiResponse;
 import com.theokanning.openai.completion.CompletionChoice;
@@ -91,6 +94,36 @@ public class MainActivity extends AppCompatActivity {
 //        });
     }
 
+    @Override
+    protected void onStart() {
+        // support drawer menu
+        binding.navView.setNavigationItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.item_chat) {
+                showSnackbar("You are already in the chat");
+                return true;
+            }
+            if (item.getItemId() == R.id.item_settings) {
+                showSnackbar("Coming soon...");
+                return true;
+            }
+            return false;
+        });
+        super.onStart();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.item_chat) {
+            showSnackbar("You are already in the chat");
+            return true;
+        }
+        if (item.getItemId() == R.id.item_settings) {
+            showSnackbar("Coming soon...");
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     // overriding the onCreateOptions menu to inflate the menu also into the toolbar default menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -104,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
             t.interrupt();
             t = null;
         }
+
+        binding.chatInput.clearComposingText();
 
         binding.progressBar.setVisibility(View.GONE);
         binding.chatInput.clearComposingText();
@@ -137,44 +172,42 @@ public class MainActivity extends AppCompatActivity {
             if (chat.isEmpty() || chat == null) {
                 runOnUiThread(() -> binding.chatInput.setError("Please enter something"));
                 return;
-            } else
-                storeInput(binding.chatInput.getText().toString());
+            } else {
+                storeInput(chat);
+            }
+
+            chat = complyJSON(chat);
 
             String json = "{\"model\": \""+ model +"\",\n  \"messages\": [";
 
             if (viewModel.getInHistory().getValue().size() > 0) {
                 for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
-                    json += "{\"role\": \"user\", \"content\": \"" + viewModel.getInHistory().getValue().get(i) +"\"}, ";
-                    json += "{\"role\": \"assistant\", \"content\": \"" + viewModel.getOutHistory().getValue().get(i) +"\"}";
+                    json += "{\"role\": \"user\", \"content\": \"" + complyJSON(viewModel.getInHistory().getValue().get(i)) +"\"}, ";
+                    json += "{\"role\": \"assistant\", \"content\": \"" + complyJSON(viewModel.getOutHistory().getValue().get(i)) +"\"}";
                     // add comma if not last element
                     if (i != viewModel.getInHistory().getValue().size() - 1) {
                         json += ",";
                     }
                 }
-                json += ",{\"role\": \"user\", \"content\": \"" + binding.chatInput.getText().toString() +"\"}";
+                json += ",{\"role\": \"user\", \"content\": \"" + chat +"\"}";
                 json += "]}";
             }
             else if (json.length() > 3900) {
                 runOnUiThread(() -> {
                     showSnackbar("History data too large\nClearing history...");
+                    // fire reset button
                     handleResetButton(view);
-                    handleSendButton(view);
                 });
-                storeInput(binding.chatInput.getText().toString());
-                json = "{\n" +
-                        "  \"model\": \""+ model +"\",\n \"messages\": ["
-                        +  "{\"role\": \"user\", \"content\": \"" + binding.chatInput.getText().toString() +"\"}]\n}";
             }
             else {
                 json = "{\n" +
                         "  \"model\": \""+ model + "\",\n \"messages\": ["
-                        +  "{\"role\": \"user\", \"content\": \"" + binding.chatInput.getText().toString() +"\"}]\n}";
+                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
             }
 
             System.out.println(json);
 
             String url = "https://api.openai.com/v1/chat/completions";
-            json = json.replace("\n", " "); // json cannot contain newlines
 
             RequestBody body = RequestBody.create(json, JSON);
             Request request = new Request.Builder()
@@ -185,13 +218,12 @@ public class MainActivity extends AppCompatActivity {
             try (Response response = client.newCall(request).execute()) {
                 String res = response.body().string();
                 System.out.println("Response: \n" + res);
-
                 if (!response.isSuccessful() || res.contains("error")) {
+                    System.out.println("Response code: " + response.code());
                     runOnUiThread(() -> {
                         showSnackbar("Error: " + res);
-                        showSnackbar("History data too large\nResetting... Sending request without history, sorry :(");
+//                        showSnackbar("History data too large\nResetting... Sending request without history, sorry :(");
                         handleResetButton(view);
-                        handleSendButton(view);
                     });
                     return;
                 } else
@@ -256,7 +288,27 @@ public class MainActivity extends AppCompatActivity {
      * This method shows a snackbar with the given message
      * @param message the message to show in the snackbar
      */
-    public void showSnackbar(String message) {
-        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.BLUE).show();
+    private void showSnackbar(String message) {
+        Snackbar sb = Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.CYAN);
+        sb.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
+        sb.show();
+    }
+
+    /**
+     *
+     * @param str the string to make json compliant
+     * @return the json compliant string
+     */
+    private String complyJSON(String str) {
+        // make string json compliant
+        String escaped = str.replace("\"", "\\"+"\"");
+        escaped = escaped.replace("\n", "\\" + "n");
+        escaped = escaped.replace("\r", "\\r");
+        escaped = escaped.replace("\t", "\\t");
+        escaped = escaped.replace("\b", "\\b");
+        escaped = escaped.replace("\f", "\\f");
+        escaped = escaped.replace("/", "\\/");
+
+        return escaped;
     }
 }
