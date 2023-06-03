@@ -2,6 +2,7 @@ package me.teboho.chatwithgpt.http;
 
 import java.util.concurrent.TimeUnit;
 
+import me.teboho.chatwithgpt.BuildConfig;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -10,7 +11,7 @@ import okhttp3.Response;
 
 public class HttpClient {
     final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    String OPENAI_API_KEY = "OPENAI_API_KEY";
+    String OPENAI_API_KEY = BuildConfig.apikey;
     public static HttpClient instance;
     OkHttpClient client;
 

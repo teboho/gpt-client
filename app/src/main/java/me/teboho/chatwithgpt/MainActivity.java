@@ -45,7 +45,7 @@ import okhttp3.Response;
  */
 public class MainActivity extends AppCompatActivity {
     // exposing the API key is not a good practice, but this is just a demo
-    String OPENAI_API_KEY = "OPENAI_API_KEY";
+    String OPENAI_API_KEY = BuildConfig.apikey;
     String model = "gpt-3.5-turbo";
     ActivityMainBinding binding;
     ActionBarDrawerToggle toggle; // Toggle button for the drawer
