@@ -9,8 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import me.teboho.chatwithgpt.databinding.FragmentSettingsBinding;
-
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link SettingsFragment#newInstance} factory method to
@@ -26,8 +24,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
-    FragmentSettingsBinding binding;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -58,10 +54,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        // set the title of the fragment
     }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);
+
+        // get the preference and set the summary to the current value
+        androidx.preference.EditTextPreference editTextPreference = (androidx.preference.EditTextPreference) findPreference("pref_name");
+        editTextPreference.setSummary(editTextPreference.getText());
     }
 }

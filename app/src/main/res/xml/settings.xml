@@ -18,6 +18,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="Name"
+            app:icon="@android:drawable/ic_menu_edit"
+            app:isPreferenceVisible="true"
             app:summary="Can be first name or nick name" />
     </PreferenceCategory>
 </PreferenceScreen>
