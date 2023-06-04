@@ -54,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
     static ActivityMainBinding binding;
     ActionBarDrawerToggle toggle; // Toggle button for the drawer
 
-    static final ChatFragment chatFragment = new ChatFragment();
-    static final SettingsFragment settingsFragment = new SettingsFragment();
+    ChatFragment chatFragment = new ChatFragment();
+    SettingsFragment settingsFragment = new SettingsFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         loadPreferences();
-
         // support drawer menu item selections
         binding.navView.setNavigationItemSelectedListener(this::onOptionsItemSelected);
     }
@@ -107,8 +106,11 @@ public class MainActivity extends AppCompatActivity {
             }
             if (key.equals("pref_name")) {
                 String _username = sharedPreferences1.getString("pref_name", "User");
-                tvName.setText(_username);
-                tvName.invalidate(); // invalidate the view to force it to redraw
+                runOnUiThread(() -> {
+                    tvName.setText(_username);
+                    tvName.invalidate();
+                    binding.navView.invalidate();
+                });
             }
         });
     }
