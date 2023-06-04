@@ -97,18 +97,18 @@ public class MainActivity extends AppCompatActivity {
                 .setDefaultNightMode(isDarkMode? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         TextView tvName = binding.navView.getHeaderView(0).findViewById(R.id.tv_name);
         tvName.setText(username);
-        chatFragment.setName(username);
 
         // watch for changes in the preferences and check which preference changed then read the new value and apply it
         sharedPreferences.registerOnSharedPreferenceChangeListener((sharedPreferences1, key) -> {
             if (key.equals("pref_dark_mode")) {
-                boolean _isDarkMode = sharedPreferences.getBoolean("pref_dark_mode", false);
+                boolean _isDarkMode = sharedPreferences1.getBoolean("pref_dark_mode", false);
                 AppCompatDelegate
                         .setDefaultNightMode(_isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
             }
             if (key.equals("pref_name")) {
-                String _username = sharedPreferences.getString("pref_name", "User");
+                String _username = sharedPreferences1.getString("pref_name", "User");
                 tvName.setText(_username);
+                tvName.invalidate(); // invalidate the view to force it to redraw
             }
         });
     }

@@ -282,7 +282,4 @@ public class ChatFragment extends Fragment {
 
         return escaped;
     }
-
-    public void setName(String username) {
-    }
 }
