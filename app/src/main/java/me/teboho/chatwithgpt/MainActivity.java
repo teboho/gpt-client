@@ -4,8 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -15,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,14 +51,11 @@ import okhttp3.Response;
  * @author teboho
  */
 public class MainActivity extends AppCompatActivity {
-    // exposing the API key is not a good practice, but this is just a demo
-    String OPENAI_API_KEY = BuildConfig.apikey;
-    String model = "gpt-3.5-turbo";
-    ActivityMainBinding binding;
+    static ActivityMainBinding binding;
     ActionBarDrawerToggle toggle; // Toggle button for the drawer
-    Thread t;
 
-    MainViewModel viewModel = new MainViewModel();
+    static final ChatFragment chatFragment = new ChatFragment();
+    static final SettingsFragment settingsFragment = new SettingsFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,58 +68,59 @@ public class MainActivity extends AppCompatActivity {
         toggle = new ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar, R.string.open, R.string.close);
         binding.drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+        getSupportActionBar().setTitle("Chat With GPT");
 
-        // binding.chatOutput.setMovementMethod(new ScrollingMovementMethod()); //make textview scrollable
-
-        ChatsAdapter adapter = new ChatsAdapter(viewModel);
-        binding.chatsRecyclerView.setAdapter(adapter);
-
-        binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // scroll to bottom of recyclerview
-        binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount() - 1);
-
-        // switch to dark mode
-//        binding.modeSwitch.setOnClickListener(l -> {
-//            // get the current state of the switch
-//            boolean isChecked = binding.modeSwitch.isChecked();
-//            if (isChecked) {
-//                showSnackbar("Dark mode enabled\nHistory will be cleared");
-//                // change the theme to dark mode juat using theme files
-//                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-//
-//            } else {
-//                showSnackbar("Light mode enabled\nHistory will be cleared");
-//                // change theme to light
-//                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-//            }
-//        });
+        // set the chat fragment as the default fragment to show
+        setFragment(chatFragment);
     }
+
+
 
     @Override
     protected void onStart() {
-        // support drawer menu
-        binding.navView.setNavigationItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.item_chat) {
-                showSnackbar("You are already in the chat");
-                return true;
-            }
-            if (item.getItemId() == R.id.item_settings) {
-                showSnackbar("Coming soon...");
-                return true;
-            }
-            return false;
-        });
         super.onStart();
+
+        loadPreferences();
+
+        // support drawer menu item selections
+        binding.navView.setNavigationItemSelectedListener(this::onOptionsItemSelected);
+    }
+    protected void loadPreferences() {
+        // Accommodating SharedPreferences for the dark mode
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        // set the default value of the theme to light
+        boolean isDarkMode = sharedPreferences.getBoolean("pref_dark_mode", false);
+        String username = sharedPreferences.getString("pref_name", "User");
+
+        // load the preferences and watch for changes
+        AppCompatDelegate
+                .setDefaultNightMode(isDarkMode? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+        TextView tvName = binding.navView.getHeaderView(0).findViewById(R.id.tv_name);
+        tvName.setText(username);
+        chatFragment.setName(username);
+
+        // watch for changes in the preferences and check which preference changed then read the new value and apply it
+        sharedPreferences.registerOnSharedPreferenceChangeListener((sharedPreferences1, key) -> {
+            if (key.equals("pref_dark_mode")) {
+                boolean _isDarkMode = sharedPreferences.getBoolean("pref_dark_mode", false);
+                AppCompatDelegate
+                        .setDefaultNightMode(_isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+            }
+            if (key.equals("pref_name")) {
+                String _username = sharedPreferences.getString("pref_name", "User");
+                tvName.setText(_username);
+            }
+        });
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.item_chat) {
-            showSnackbar("You are already in the chat");
+            setFragment(chatFragment);
             return true;
         }
         if (item.getItemId() == R.id.item_settings) {
-            showSnackbar("Coming soon...");
+            setFragment(settingsFragment);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -131,184 +133,25 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.drawer_menu, menu);
         return true;
     }
-
-    public void handleResetButton(View view){
-        if (t != null && t.isAlive()) {
-            t.interrupt();
-            t = null;
-        }
-
-        binding.chatInput.clearComposingText();
-
-        binding.progressBar.setVisibility(View.GONE);
-        binding.chatInput.clearComposingText();
-        viewModel.getChatInput().setValue("");
-        viewModel.getChatOutput().setValue("");
-        viewModel.getInHistory().getValue().clear();
-        viewModel.getOutHistory().getValue().clear();
-        binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
-    }
-
-    /**
-     * This method is called when the send button is clicked
-     * @param view the view that was clicked
-     * @author teboho
-     */
-    public void handleSendButton(View view) {
-        // Show loading indicator
-        binding.progressBar.setVisibility(View.VISIBLE);
-        t = new Thread(() -> {
-            final MediaType JSON
-                    = MediaType.get("application/json; charset=utf-8");
-
-            OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.connectTimeout(5, TimeUnit.MINUTES) // connect timeout
-                    .writeTimeout(5, TimeUnit.MINUTES) // write timeout
-                    .readTimeout(5, TimeUnit.MINUTES); // read timeout
-
-            OkHttpClient client = builder.build();
-
-            String chat = binding.chatInput.getText().toString();
-            if (chat.isEmpty() || chat == null) {
-                runOnUiThread(() -> binding.chatInput.setError("Please enter something"));
-                return;
-            } else {
-                storeInput(chat);
-            }
-
-            chat = complyJSON(chat);
-
-            String json = "{\"model\": \""+ model +"\",\n  \"messages\": [";
-
-            if (viewModel.getInHistory().getValue().size() > 0) {
-                for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
-                    json += "{\"role\": \"user\", \"content\": \"" + complyJSON(viewModel.getInHistory().getValue().get(i)) +"\"}, ";
-                    json += "{\"role\": \"assistant\", \"content\": \"" + complyJSON(viewModel.getOutHistory().getValue().get(i)) +"\"}";
-                    // add comma if not last element
-                    if (i != viewModel.getInHistory().getValue().size() - 1) {
-                        json += ",";
-                    }
-                }
-                json += ",{\"role\": \"user\", \"content\": \"" + chat +"\"}";
-                json += "]}";
-            }
-            else if (json.length() > 3900) {
-                runOnUiThread(() -> {
-                    showSnackbar("History data too large\nClearing history...");
-                    // fire reset button
-                    handleResetButton(view);
-                });
-            }
-            else {
-                json = "{\n" +
-                        "  \"model\": \""+ model + "\",\n \"messages\": ["
-                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
-            }
-
-            System.out.println(json);
-
-            String url = "https://api.openai.com/v1/chat/completions";
-
-            RequestBody body = RequestBody.create(json, JSON);
-            Request request = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
-                    .url(url)
-                    .post(body)
-                    .build();
-            try (Response response = client.newCall(request).execute()) {
-                String res = response.body().string();
-                System.out.println("Response: \n" + res);
-                if (!response.isSuccessful() || res.contains("error")) {
-                    System.out.println("Response code: " + response.code());
-                    runOnUiThread(() -> {
-                        showSnackbar("Error: " + res);
-//                        showSnackbar("History data too large\nResetting... Sending request without history, sorry :(");
-                        handleResetButton(view);
-                    });
-                    return;
-                } else
-                    runOnUiThread(() -> binding.chatInput.setError(null));
-                runOnUiThread(() -> binding.progressBar.setVisibility(View.GONE));
-
-                // Break down the response json
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode rootNode = mapper.readTree(res);
-
-                // Get the choices
-                String id = rootNode.get("id").asText();
-                String object = rootNode.get("object").asText();
-                String created = rootNode.get("created").asText();
-                String model = rootNode.get("model").asText();
-                String choices = rootNode.get("choices").asText();
-                System.out.println(choices);
-                JsonNode choicesNode = rootNode.get("choices");
-                int index = choicesNode.get(0).get("index").asInt();
-                String message = choicesNode.get(0).get("message").get("content").asText();
-                String finishReason = choicesNode.get(0).get("finish_reason").asText();
-
-                storeOutput(message);
-            } catch (IOException e) {
-                runOnUiThread(() -> binding.chatInput.setError("Something went wrong with the internet request/response"));
-                runOnUiThread(() -> showSnackbar("Something went wrong with the internet request/response" + e.getMessage()));
-                e.printStackTrace();
-            }
-        }, "chat");
-        t.start();
-    }
-
-    /**
-     * This method stores the input in the view model
-     * @param input the input to store in the view model
-     */
-    private void storeInput(String input) {
-        runOnUiThread(() -> viewModel.getChatInput().setValue(input));
-    }
-
-    /**
-     * This method stores the output in the view model
-     * @param output the output to store in the view model
-     */
-    private void storeOutput(String output) {
-        runOnUiThread(() -> {
-            viewModel.getChatOutput().setValue(output);
-
-            // Store the chat in the chat history
-            viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
-            viewModel.getOutHistory().getValue().add(output);
-
-            viewModel.getLength().setValue(viewModel.getLength().getValue() + 1);
-            binding.chatsRecyclerView.getAdapter().notifyItemChanged(viewModel.getLength().getValue() - 1);
-
-            // Scroll to the bottom of the recycler view
-            binding.chatsRecyclerView.smoothScrollToPosition(viewModel.getLength().getValue() - 1);
-        });
-    }
-
     /**
      * This method shows a snackbar with the given message
      * @param message the message to show in the snackbar
      */
-    private void showSnackbar(String message) {
+    public static void showSnackbar(String message) {
         Snackbar sb = Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.CYAN);
         sb.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
         sb.show();
     }
 
-    /**
-     *
-     * @param str the string to make json compliant
-     * @return the json compliant string
-     */
-    private String complyJSON(String str) {
-        // make string json compliant
-        String escaped = str.replace("\"", "\\"+"\"");
-        escaped = escaped.replace("\n", "\\" + "n");
-        escaped = escaped.replace("\r", "\\r");
-        escaped = escaped.replace("\t", "\\t");
-        escaped = escaped.replace("\b", "\\b");
-        escaped = escaped.replace("\f", "\\f");
-        escaped = escaped.replace("/", "\\/");
+    private void setFragment(Fragment fragment) {
+        getSupportActionBar().setTitle(fragment instanceof ChatFragment ? "Chat" : "Settings");
 
-        return escaped;
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
+
+        if (binding.drawerLayout.isDrawerOpen(binding.navView))
+            binding.drawerLayout.closeDrawers();
     }
 }

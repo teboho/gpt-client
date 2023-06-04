@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:title="Settings">
 
     <PreferenceCategory android:title="UI Mode">
 
         <SwitchPreference
             android:defaultValue="false"
-            android:key="mode_preference"
+            android:key="pref_dark_mode"
             android:title="Dark Mode" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Profile">
+
+        <EditTextPreference
+            android:defaultValue="User"
+            android:key="pref_name"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Name"
+            app:summary="Can be first name or nick name" />
     </PreferenceCategory>
 </PreferenceScreen>

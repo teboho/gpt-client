@@ -1,12 +1,14 @@
 package me.teboho.chatwithgpt;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -55,6 +57,10 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             super(view);
             chatByAssistant = view.findViewById(R.id.chatByAssistant);
             chatByUser = view.findViewById(R.id.chatByUser);
+
+            TextView inUser = view.findViewById(R.id.inUser);
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(view.getContext().getApplicationContext());
+            inUser.setText(pref.getString("pref_name", "User"));
         }
     }
 

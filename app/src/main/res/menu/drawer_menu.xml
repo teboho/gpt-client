@@ -3,8 +3,10 @@
 
     <item
         android:id="@+id/item_chat"
+        android:icon="@android:drawable/stat_notify_chat"
         android:title="Chat" />
     <item
         android:id="@+id/item_settings"
+        android:icon="@drawable/settings_48px_foreground"
         android:title="Settings" />
 </menu>

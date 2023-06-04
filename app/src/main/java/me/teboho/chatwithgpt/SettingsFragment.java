@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import me.teboho.chatwithgpt.databinding.FragmentSettingsBinding;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link SettingsFragment#newInstance} factory method to
@@ -24,6 +26,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    FragmentSettingsBinding binding;
 
     public SettingsFragment() {
         // Required empty public constructor
