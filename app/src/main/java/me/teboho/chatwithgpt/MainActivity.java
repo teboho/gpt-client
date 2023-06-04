@@ -106,11 +106,12 @@ public class MainActivity extends AppCompatActivity {
             }
             if (key.equals("pref_name")) {
                 String _username = sharedPreferences1.getString("pref_name", "User");
-                runOnUiThread(() -> {
-                    tvName.setText(_username);
-                    tvName.invalidate();
-                    binding.drawerLayout.invalidate();
-                });
+                tvName.setText(_username);
+                tvName.invalidate();
+                binding.drawerLayout.invalidate();
+                // get the preference and set the summary to the current value
+                androidx.preference.EditTextPreference editTextPreference = (androidx.preference.EditTextPreference) settingsFragment.findPreference("pref_name");
+                editTextPreference.setSummary(editTextPreference.getText());
             }
         });
     }
