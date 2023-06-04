@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     tvName.setText(_username);
                     tvName.invalidate();
-                    binding.navView.invalidate();
+                    binding.drawerLayout.invalidate();
                 });
             }
         });
