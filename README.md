@@ -13,6 +13,10 @@ Usage via android studio will require that you enter own api key in the main fil
 
 <img src="Screenshot_20230602_224056.png" width="200" height="400" alt="Screenshot3" /> <img src="Screenshot_20230602_224312.png" width="200" height="400" alt="Screenshot4" />  
 
+<img src="Screenshot_20230604_230415.png" width="200" height="400" alt="Screenshot3" /> <img src="Screenshot_20230604_230514.png" width="200" height="400" alt="Screenshot4" />  
+
+
+
 > Github: [@teboho/chatpt-client](https://github.com/teboho/chatgpt-client)  
 > &copy; 2023 teboho  
 > Using icons from https://dribbble.com/shots/8934409-Diversity-Avatars  
