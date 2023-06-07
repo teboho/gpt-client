@@ -185,7 +185,12 @@ public class ChatFragment extends Fragment {
 
             String chat = binding.chatInput.getText().toString();
             if (chat.isEmpty() || chat == null) {
-                getActivity().runOnUiThread(() -> binding.chatInput.setError("Please enter something"));
+                getActivity().runOnUiThread(() -> {
+                    binding.chatInput.setError("Please enter something");
+                    binding.progressBar.setVisibility(View.GONE);
+                });
+                // end the thread
+                t.interrupt();
                 return;
             } else {
                 storeInput(chat);
@@ -224,11 +229,16 @@ public class ChatFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     System.out.println("Response code: " + response.code());
                     getActivity().runOnUiThread(() -> {
-                        MainActivity.showSnackbar("Error: " + response.code() + " | " + response.message());
+                        if (response.code() == 429)
+                            MainActivity.showSnackbar("Try again in a 60 seconds");
+                        else
+                            MainActivity.showSnackbar("There was an error, please try again");
                         binding.chatInput.setError("There was an error, please try again");
                         // Hide loading indicator
                         binding.progressBar.setVisibility(View.GONE);
                     });
+                    // end the thread
+                     t.interrupt();
                     return;
                 } else
                     getActivity().runOnUiThread(() -> binding.chatInput.setError(null));
