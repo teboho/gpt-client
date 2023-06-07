@@ -224,8 +224,10 @@ public class ChatFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     System.out.println("Response code: " + response.code());
                     getActivity().runOnUiThread(() -> {
-                        MainActivity.showSnackbar("Error: " + response.message());
+                        MainActivity.showSnackbar("Error: " + response.code() + " | " + response.message());
                         binding.chatInput.setError("There was an error, please try again");
+                        // Hide loading indicator
+                        binding.progressBar.setVisibility(View.GONE);
                     });
                     return;
                 } else
