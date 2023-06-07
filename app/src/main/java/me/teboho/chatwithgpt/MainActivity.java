@@ -5,9 +5,11 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -54,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
     static ActivityMainBinding binding;
     ActionBarDrawerToggle toggle; // Toggle button for the drawer
 
-    ChatFragment chatFragment = new ChatFragment();
-    SettingsFragment settingsFragment = new SettingsFragment();
+    ChatFragment chatFragment;
+    SettingsFragment settingsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,13 +70,14 @@ public class MainActivity extends AppCompatActivity {
         toggle = new ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar, R.string.open, R.string.close);
         binding.drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
-        getSupportActionBar().setTitle("Chat With GPT");
+        getSupportActionBar().setTitle("Chat");
+
+        chatFragment = new ChatFragment();
+        settingsFragment = new SettingsFragment();
 
         // set the chat fragment as the default fragment to show
         setFragment(chatFragment);
     }
-
-
 
     @Override
     protected void onStart() {
@@ -84,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         // support drawer menu item selections
         binding.navView.setNavigationItemSelectedListener(this::onOptionsItemSelected);
     }
+
     protected void loadPreferences() {
         // Accommodating SharedPreferences for the dark mode
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -98,22 +102,34 @@ public class MainActivity extends AppCompatActivity {
         tvName.setText(username);
 
         // watch for changes in the preferences and check which preference changed then read the new value and apply it
-        sharedPreferences.registerOnSharedPreferenceChangeListener((sharedPreferences1, key) -> {
-            if (key.equals("pref_dark_mode")) {
-                boolean _isDarkMode = sharedPreferences1.getBoolean("pref_dark_mode", false);
-                AppCompatDelegate
-                        .setDefaultNightMode(_isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
-            }
-            if (key.equals("pref_name")) {
-                String _username = sharedPreferences1.getString("pref_name", "User");
-                tvName.setText(_username);
-                tvName.invalidate();
-                binding.drawerLayout.invalidate();
-                // get the preference and set the summary to the current value
-                androidx.preference.EditTextPreference editTextPreference = (androidx.preference.EditTextPreference) settingsFragment.findPreference("pref_name");
-                editTextPreference.setSummary(editTextPreference.getText());
-            }
-        });
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this::onPreferenceChangeListener);
+    }
+
+    private void onPreferenceChangeListener(SharedPreferences sharedPreferences, String key) {
+        TextView tvName = binding.navView.getHeaderView(0).findViewById(R.id.tv_name);
+
+        if (key.equals("pref_dark_mode")) {
+            System.out.println("Dark mode changed");
+            boolean _isDarkMode = sharedPreferences.getBoolean("pref_dark_mode", false);
+            AppCompatDelegate
+                    .setDefaultNightMode(_isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
+            finish();
+            startActivity(getIntent());
+        }
+        if (key.equals("pref_name")) {
+            System.out.println("Name changed");
+            String _username = sharedPreferences.getString("pref_name", "User");
+            tvName.setText(_username);
+            tvName.invalidate();
+            binding.drawerLayout.invalidate();
+            // get the preference and set the summary to the current value
+            androidx.preference.EditTextPreference editTextPreference = (androidx.preference.EditTextPreference) settingsFragment.findPreference("pref_name");
+            editTextPreference.setSummary(editTextPreference.getText());
+
+            // show a snackbar to notify the user that the name has changed
+            showSnackbar("Name changed to " + _username + "\n changes will take wide effect after restarting the app");
+        }
     }
 
     @Override
@@ -136,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.drawer_menu, menu);
         return true;
     }
+
     /**
      * This method shows a snackbar with the given message
      * @param message the message to show in the snackbar

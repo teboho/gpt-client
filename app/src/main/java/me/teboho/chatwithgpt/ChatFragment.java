@@ -1,5 +1,6 @@
 package me.teboho.chatwithgpt;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -13,8 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -48,8 +51,9 @@ public class ChatFragment extends Fragment {
     private String mParam2;
 
     // exposing the API key is not a good practice, but this is just a demo
-    String OPENAI_API_KEY = BuildConfig.apikey;
-    String model = "gpt-3.5-turbo";
+    final static String OPENAI_API_KEY = BuildConfig.apikey;
+    final static String model = "gpt-3.5-turbo";
+    final static String url = "https://api.openai.com/v1/chat/completions";
     FragmentChatBinding binding;
     MainViewModel viewModel = new MainViewModel();
     Thread t;
@@ -120,8 +124,6 @@ public class ChatFragment extends Fragment {
             t = null;
         }
 
-        binding.chatInput.clearComposingText();
-
         binding.progressBar.setVisibility(View.GONE);
         binding.chatInput.clearComposingText();
         viewModel.getChatInput().setValue("");
@@ -129,6 +131,30 @@ public class ChatFragment extends Fragment {
         viewModel.getInHistory().getValue().clear();
         viewModel.getOutHistory().getValue().clear();
         binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
+    }
+
+    private String getMessageWithoutHistory(String chat) {
+        String json = "{\"model\": \""+ model + "\",\n \"messages\": ["
+                +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]}";
+
+        return json;
+    }
+
+    private String getMessageWithHistory(String chat) {
+        String json = "{\"model\": \""+ model +"\",\n  \"messages\": [";
+
+        for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
+            json += "{\"role\": \"user\", \"content\": \"" + complyJSON(viewModel.getInHistory().getValue().get(i)) +"\"}, ";
+            json += "{\"role\": \"assistant\", \"content\": \"" + complyJSON(viewModel.getOutHistory().getValue().get(i)) +"\"}";
+            // add comma if not last element
+            if (i != viewModel.getInHistory().getValue().size() - 1) {
+                json += ",";
+            }
+        }
+        json += ",{\"role\": \"user\", \"content\": \"" + chat +"\"}";
+        json += "]}";
+
+        return json;
     }
 
     /**
@@ -139,6 +165,13 @@ public class ChatFragment extends Fragment {
     public void handleSendButton(View view) {
         // Show loading indicator
         binding.progressBar.setVisibility(View.VISIBLE);
+        // clear error
+        binding.chatInput.setError(null);
+        // get out of the chat input and remove the keyboard
+        binding.chatInput.clearFocus();
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(binding.chatInput.getWindowToken(), 0);
+
         t = new Thread(() -> {
             final MediaType JSON
                     = MediaType.get("application/json; charset=utf-8");
@@ -158,38 +191,26 @@ public class ChatFragment extends Fragment {
                 storeInput(chat);
             }
 
+            // because we are about to send it to the server, we need to comply with the JSON standard
             chat = complyJSON(chat);
 
-            String json = "{\"model\": \""+ model +"\",\n  \"messages\": [";
+            String json = "";
 
             if (viewModel.getInHistory().getValue().size() > 0) {
-                for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
-                    json += "{\"role\": \"user\", \"content\": \"" + complyJSON(viewModel.getInHistory().getValue().get(i)) +"\"}, ";
-                    json += "{\"role\": \"assistant\", \"content\": \"" + complyJSON(viewModel.getOutHistory().getValue().get(i)) +"\"}";
-                    // add comma if not last element
-                    if (i != viewModel.getInHistory().getValue().size() - 1) {
-                        json += ",";
-                    }
-                }
-                json += ",{\"role\": \"user\", \"content\": \"" + chat +"\"}";
-                json += "]}";
-            }
-            else if (json.length() > 3900) {
-                getActivity().runOnUiThread(() -> {
-                    MainActivity.showSnackbar("History data too large\nClearing history...");
-                    // fire reset button
-                    handleResetButton(view);
-                });
+                json = getMessageWithHistory(chat);
             }
             else {
-                json = "{\n" +
-                        "  \"model\": \""+ model + "\",\n \"messages\": ["
-                        +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]\n}";
+                json = getMessageWithoutHistory(chat);
+            }
+
+            if (json.length() > 3900) {
+                getActivity().runOnUiThread(() -> {
+                    MainActivity.showSnackbar("History data too large, will only not use it.\nTap Reset to clear history");
+                });
+                json = getMessageWithoutHistory(chat);
             }
 
             System.out.println(json);
-
-            String url = "https://api.openai.com/v1/chat/completions";
 
             RequestBody body = RequestBody.create(json, JSON);
             Request request = new Request.Builder()
@@ -200,33 +221,19 @@ public class ChatFragment extends Fragment {
             try (Response response = client.newCall(request).execute()) {
                 String res = response.body().string();
                 System.out.println("Response: \n" + res);
-                if (!response.isSuccessful() || res.contains("error")) {
+                if (!response.isSuccessful()) {
                     System.out.println("Response code: " + response.code());
                     getActivity().runOnUiThread(() -> {
-                        MainActivity.showSnackbar("Error: " + res);
-//                        MainActivity.showSnackbar("History data too large\nResetting... Sending request without history, sorry :(");
-                        handleResetButton(view);
+                        MainActivity.showSnackbar("Error: " + response.message());
+                        binding.chatInput.setError("There was an error, please try again");
                     });
                     return;
                 } else
                     getActivity().runOnUiThread(() -> binding.chatInput.setError(null));
+
                 getActivity().runOnUiThread(() -> binding.progressBar.setVisibility(View.GONE));
 
-                // Break down the response json
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode rootNode = mapper.readTree(res);
-
-                // Get the choices
-                String id = rootNode.get("id").asText();
-                String object = rootNode.get("object").asText();
-                String created = rootNode.get("created").asText();
-                String model = rootNode.get("model").asText();
-                String choices = rootNode.get("choices").asText();
-                System.out.println(choices);
-                JsonNode choicesNode = rootNode.get("choices");
-                int index = choicesNode.get(0).get("index").asInt();
-                String message = choicesNode.get(0).get("message").get("content").asText();
-                String finishReason = choicesNode.get(0).get("finish_reason").asText();
+                String message = processResponse(res);
 
                 storeOutput(message);
             } catch (IOException e) {
@@ -236,6 +243,34 @@ public class ChatFragment extends Fragment {
             }
         }, "chat");
         t.start();
+    }
+
+    private String processResponse(String jsonResponse) {
+        // Break down the response json
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = null;
+        String message = "";
+        try {
+            rootNode = mapper.readTree(jsonResponse);
+
+            // Get the choices
+            String id = rootNode.get("id").asText();
+            String object = rootNode.get("object").asText();
+            String created = rootNode.get("created").asText();
+            String model = rootNode.get("model").asText();
+            String choices = rootNode.get("choices").asText();
+            System.out.println(choices);
+            JsonNode choicesNode = rootNode.get("choices");
+            int index = choicesNode.get(0).get("index").asInt();
+            message = choicesNode.get(0).get("message").get("content").asText();
+            String finishReason = choicesNode.get(0).get("finish_reason").asText();
+        } catch (JsonProcessingException e) {
+            getActivity().runOnUiThread(() ->
+                    MainActivity.showSnackbar("Something went wrong with the internet request/response" + e.getMessage())
+            );
+            throw new RuntimeException(e);
+        }
+        return message;
     }
 
     /**

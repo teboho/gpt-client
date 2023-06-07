@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.zip.Inflater;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link SettingsFragment#newInstance} factory method to
@@ -54,13 +56,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
-        // set the title of the fragment
     }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);
+        // bind the preference screen to the shared preferences
+        androidx.preference.PreferenceManager.setDefaultValues(getActivity(), R.xml.settings, false);
 
         // get the preference and set the summary to the current value
         androidx.preference.EditTextPreference editTextPreference = (androidx.preference.EditTextPreference) findPreference("pref_name");

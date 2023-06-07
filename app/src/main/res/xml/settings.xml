@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:fragment="SettingsFragment"
     app:title="Settings">
 
     <PreferenceCategory android:title="UI Mode">
@@ -8,7 +10,9 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="pref_dark_mode"
-            android:title="Dark Mode" />
+            android:title="Dark Mode"
+            app:icon="@drawable/dark_mode"
+            app:summary="Changing mode restarts the application" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Profile">
 
