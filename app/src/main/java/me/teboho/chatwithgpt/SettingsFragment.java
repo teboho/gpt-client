@@ -2,12 +2,17 @@ package me.teboho.chatwithgpt;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
+import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreference;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.zip.Inflater;
 
@@ -62,10 +67,37 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);
         // bind the preference screen to the shared preferences
-        androidx.preference.PreferenceManager.setDefaultValues(getActivity(), R.xml.settings, false);
+        PreferenceManager.setDefaultValues(getActivity(), R.xml.settings, false);
 
         // get the preference and set the summary to the current value
-        androidx.preference.EditTextPreference editTextPreference = (androidx.preference.EditTextPreference) findPreference("pref_name");
+        EditTextPreference editTextPreference = (EditTextPreference) findPreference("pref_name");
         editTextPreference.setSummary(editTextPreference.getText());
+
+        // watch for changes in the preferences and check which preference changed then read the new value and apply it
+        // watch the switch preference
+        SwitchPreference switchPreference = (SwitchPreference) findPreference("pref_dark_mode");
+        switchPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            // set the default value of the theme to light
+            boolean isDarkMode = (boolean) newValue;
+            // load the preferences and watch for changes
+            AppCompatDelegate
+                    .setDefaultNightMode(isDarkMode? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+            return true;
+        });
+        // watch the edit text preference
+        EditTextPreference editTextPreference1 = (EditTextPreference) findPreference("pref_name");
+        editTextPreference1.setOnPreferenceChangeListener((preference, newValue) -> {
+            // set the default value of the theme to light
+            String name = (String) newValue;
+            // load the preferences and watch for changes
+            editTextPreference1.setSummary(name);
+
+            // modify the navigation header
+            // get the navigation header
+            TextView tv_name = (getActivity().findViewById(R.id.drawerLayout).findViewById(R.id.tv_name));
+            tv_name.setText(name);
+
+            return true;
+        });
     }
 }

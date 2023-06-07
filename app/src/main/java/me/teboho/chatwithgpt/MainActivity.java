@@ -100,12 +100,9 @@ public class MainActivity extends AppCompatActivity {
                 .setDefaultNightMode(isDarkMode? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         TextView tvName = binding.navView.getHeaderView(0).findViewById(R.id.tv_name);
         tvName.setText(username);
-
-        // watch for changes in the preferences and check which preference changed then read the new value and apply it
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this::onPreferenceChangeListener);
     }
 
-    private void onPreferenceChangeListener(SharedPreferences sharedPreferences, String key) {
+    private void __onPreferenceChangeListener(SharedPreferences sharedPreferences, String key) {
         TextView tvName = binding.navView.getHeaderView(0).findViewById(R.id.tv_name);
 
         if (key.equals("pref_dark_mode")) {
