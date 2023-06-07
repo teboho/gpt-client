@@ -4,6 +4,12 @@ Usage via android studio will require that you enter own api key in the main fil
 
 *This project is partly an experiment, as such, development is ongoing*
 
+## Use cases  
+
+1. User can send and receive messages to and from gpt assistant using the *Chat screen*
+2. User can change their custom name using the *Settings screen*
+3. User can alternate between dark mode and light mode using the *Settings screen*
+
 ## Installer
 [Click here to install to android](https://github.com/teboho/chatgpt-client/releases)
 
