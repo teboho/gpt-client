@@ -2,6 +2,9 @@
 GPT Android FrontEnd  
 Usage via android studio will require that you enter own api key in the main file in order to talk to the Open AI API
 
+### Demo video
+![Youtube](https://youtu.be/WwaIEmMKMyM)
+
 *This project is partly an experiment, as such, development is ongoing*
 
 ## Use cases  
