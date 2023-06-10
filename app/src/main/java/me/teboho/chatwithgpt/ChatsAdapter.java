@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+
 /**
  * This is the adapter for the recyclerview
  * It handles the logic of the recyclerview
@@ -21,6 +23,14 @@ import androidx.recyclerview.widget.RecyclerView;
  * @author teboho
  */
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
+    public TextView chatByAssistant;
+    public TextView chatByUser;
+
+    MainViewModel viewModel;
+    public ChatsAdapter() {
+        viewModel = new MainViewModel();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -45,12 +55,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return viewModel.getOutHistory().getValue().size();
+        return viewModel.getInHistory().getValue().size();
     }
-
-    MainViewModel viewModel;
-    public TextView chatByAssistant;
-    public TextView chatByUser;
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View view) {

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -24,6 +25,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -55,7 +57,7 @@ public class ChatFragment extends Fragment {
     final static String model = "gpt-3.5-turbo";
     final static String url = "https://api.openai.com/v1/chat/completions";
     FragmentChatBinding binding;
-    MainViewModel viewModel = new MainViewModel();
+    MainViewModel viewModel;
     Thread t;
 
     public ChatFragment() {
@@ -102,35 +104,60 @@ public class ChatFragment extends Fragment {
 
         View view = binding.getRoot();
 
+        // get the viewmodel
+        viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+
+        viewModel.getChatInput().observe(getViewLifecycleOwner(), s -> {
+            binding.chatInput.setText(s);
+        });
+
         return view;
     }
-
+    ChatsAdapter adapter;
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // ...
-        ChatsAdapter adapter = new ChatsAdapter(viewModel);
+        adapter = new ChatsAdapter(viewModel);
         binding.chatsRecyclerView.setAdapter(adapter);
-
         binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        viewModel.getInHistory().observe(getViewLifecycleOwner(), inChats -> {
+            // update the recyclerview
+            adapter.notifyItemChanged(0, inChats.size());
+        });
+        viewModel.getOutHistory().observe(getViewLifecycleOwner(), outChats -> {
+            // update the recyclerview
+            adapter.notifyItemChanged(0, outChats.size());
+        });
+
         // scroll to bottom of recyclerview
-        binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount() - 1);
+        binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount());
     }
 
     public void handleResetButton(View view){
+        System.out.println("Reset button clicked");
         if (t != null && t.isAlive()) {
             t.interrupt();
             t = null;
         }
 
         binding.progressBar.setVisibility(View.GONE);
-        binding.chatInput.clearComposingText();
-        viewModel.getChatInput().setValue("");
-        viewModel.getChatOutput().setValue("");
+        binding.chatInput.setText("");
+        int size = viewModel.getInHistory().getValue().size();
+        adapter.viewModel.getChatInput().setValue("");
+        adapter.viewModel.getChatOutput().setValue("");
+        adapter.viewModel.getInHistory().getValue().clear();
+        adapter.viewModel.getOutHistory().getValue().clear();
+
         viewModel.getInHistory().getValue().clear();
         viewModel.getOutHistory().getValue().clear();
-        binding.chatsRecyclerView.getAdapter().notifyDataSetChanged();
+
+        System.gc();
+
+        getActivity().recreate();
+
+        adapter.notifyItemRangeRemoved(0, size);
     }
 
     private String getMessageWithoutHistory(String chat) {
@@ -143,7 +170,7 @@ public class ChatFragment extends Fragment {
     private String getMessageWithHistory(String chat) {
         String json = "{\"model\": \""+ model +"\",\n  \"messages\": [";
 
-        for (int i=0; i<viewModel.getInHistory().getValue().size(); i++) {
+        for (int i=0; i < viewModel.getInHistory().getValue().size(); i++) {
             json += "{\"role\": \"user\", \"content\": \"" + complyJSON(viewModel.getInHistory().getValue().get(i)) +"\"}, ";
             json += "{\"role\": \"assistant\", \"content\": \"" + complyJSON(viewModel.getOutHistory().getValue().get(i)) +"\"}";
             // add comma if not last element
@@ -305,11 +332,10 @@ public class ChatFragment extends Fragment {
             viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
             viewModel.getOutHistory().getValue().add(output);
 
-            viewModel.getLength().setValue(viewModel.getLength().getValue() + 1);
-            binding.chatsRecyclerView.getAdapter().notifyItemChanged(viewModel.getLength().getValue() - 1);
+            binding.chatsRecyclerView.getAdapter().notifyItemChanged(0, binding.chatsRecyclerView.getAdapter().getItemCount());
 
             // Scroll to the bottom of the recycler view
-            binding.chatsRecyclerView.smoothScrollToPosition(viewModel.getLength().getValue() - 1);
+            binding.chatsRecyclerView.smoothScrollToPosition(binding.chatsRecyclerView.getAdapter().getItemCount());
         });
     }
 

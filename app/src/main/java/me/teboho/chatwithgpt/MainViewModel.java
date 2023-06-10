@@ -19,24 +19,14 @@ import java.util.List;
 public class MainViewModel extends ViewModel {
     private MutableLiveData<String> chatInput = new MutableLiveData<String>();
     private MutableLiveData<String> chatOutput = new MutableLiveData<String>();
-    private MutableLiveData<Integer> length = new MutableLiveData<>();
-
     private MutableLiveData<ArrayList<String>> inHistory = new MutableLiveData<ArrayList<String>>();
     private MutableLiveData<ArrayList<String>> outHistory = new MutableLiveData<ArrayList<String>>();
+
     public MainViewModel() {
         chatInput.setValue("Hello");
         chatOutput.setValue("");
-        length.setValue(0);
         inHistory.setValue(new ArrayList<String>());
         outHistory.setValue(new ArrayList<String>());
-    }
-
-    public MainViewModel(MainViewModel vm) {
-        chatInput.setValue(vm.getChatInput().getValue());
-        chatOutput.setValue(vm.getChatOutput().getValue());
-        length.setValue(vm.getLength().getValue());
-        inHistory.setValue(vm.getInHistory().getValue());
-        outHistory.setValue(vm.getOutHistory().getValue());
     }
 
     // There needs to be accessors for the mutable live data so that they can be observed
@@ -49,14 +39,14 @@ public class MainViewModel extends ViewModel {
     }
 
     public MutableLiveData<ArrayList<String>> getInHistory() {
+        if (inHistory.getValue() == null)
+            inHistory.setValue(new ArrayList<String>());
         return inHistory;
     }
 
     public MutableLiveData<ArrayList<String>> getOutHistory() {
+        if (outHistory.getValue() == null)
+            outHistory.setValue(new ArrayList<String>());
         return outHistory;
-    }
-
-    public MutableLiveData<Integer> getLength() {
-        return length;
     }
 }
