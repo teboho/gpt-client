@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     ActionBarDrawerToggle toggle; // Toggle button for the drawer
 
     ChatFragment chatFragment;
+    NoHistoryFragment noHistoryFragment;
     SettingsFragment settingsFragment;
 
     @Override
@@ -73,10 +74,10 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Chat");
 
         chatFragment = new ChatFragment();
+        noHistoryFragment = new NoHistoryFragment();
         settingsFragment = new SettingsFragment();
 
-        // set the chat fragment as the default fragment to show
-        setFragment(chatFragment);
+        setFragment(noHistoryFragment);
     }
 
     @Override
@@ -135,6 +136,11 @@ public class MainActivity extends AppCompatActivity {
             setFragment(chatFragment);
             return true;
         }
+        if (item.getItemId() == R.id.item_no_history) {
+
+            setFragment(noHistoryFragment);
+            return true;
+        }
         if (item.getItemId() == R.id.item_settings) {
             setFragment(settingsFragment);
             return true;
@@ -155,13 +161,13 @@ public class MainActivity extends AppCompatActivity {
      * @param message the message to show in the snackbar
      */
     public static void showSnackbar(String message) {
-        Snackbar sb = Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).setTextColor(Color.CYAN);
+        Snackbar sb = Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT);
         sb.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
         sb.show();
     }
 
     private void setFragment(Fragment fragment) {
-        getSupportActionBar().setTitle(fragment instanceof ChatFragment ? "Chat" : "Settings");
+        getSupportActionBar().setTitle(fragment instanceof ChatFragment ? "Chat" : fragment instanceof NoHistoryFragment ? "No History" : "Settings");
 
         getSupportFragmentManager()
                 .beginTransaction()

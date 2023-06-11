@@ -9,4 +9,8 @@
         android:id="@+id/item_settings"
         android:icon="@drawable/settings_48px_foreground"
         android:title="Settings" />
+    <item
+        android:id="@+id/item_no_history"
+        android:icon="@drawable/sms"
+        android:title="No History" />
 </menu>
