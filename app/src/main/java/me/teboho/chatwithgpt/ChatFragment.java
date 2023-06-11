@@ -1,28 +1,22 @@
 package me.teboho.chatwithgpt;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.TextView;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +41,6 @@ public class ChatFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -107,10 +100,6 @@ public class ChatFragment extends Fragment {
         // get the viewmodel
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
-        viewModel.getChatInput().observe(getViewLifecycleOwner(), s -> {
-            binding.chatInput.setText(s);
-        });
-
         return view;
     }
     ChatsAdapter adapter;
@@ -122,14 +111,14 @@ public class ChatFragment extends Fragment {
         binding.chatsRecyclerView.setAdapter(adapter);
         binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        viewModel.getInHistory().observe(getViewLifecycleOwner(), inChats -> {
-            // update the recyclerview
-            adapter.notifyItemChanged(0, inChats.size());
-        });
-        viewModel.getOutHistory().observe(getViewLifecycleOwner(), outChats -> {
-            // update the recyclerview
-            adapter.notifyItemChanged(0, outChats.size());
-        });
+//        viewModel.getInHistory().observe(getViewLifecycleOwner(), inChats -> {
+//            // update the recyclerview
+//            adapter.notifyItemRangeChanged(0, inChats.size());
+//        });
+//        viewModel.getOutHistory().observe(getViewLifecycleOwner(), outChats -> {
+//            // update the recyclerview
+//            adapter.notifyItemRangeChanged(0, outChats.size());
+//        });
 
         // scroll to bottom of recyclerview
         binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount());
@@ -160,21 +149,23 @@ public class ChatFragment extends Fragment {
         adapter.notifyItemRangeRemoved(0, size);
     }
 
-    private String getMessageWithoutHistory(String chat) {
+    private String prepMessageWithoutHistory(String chat) {
         String json = "{\"model\": \""+ model + "\",\n \"messages\": ["
                 +  "{\"role\": \"user\", \"content\": \"" + chat +"\"}]}";
 
         return json;
     }
 
-    private String getMessageWithHistory(String chat) {
+    private String prepMessageWithHistory(String chat) {
         String json = "{\"model\": \""+ model +"\",\n  \"messages\": [";
 
-        for (int i=0; i < viewModel.getInHistory().getValue().size(); i++) {
-            json += "{\"role\": \"user\", \"content\": \"" + complyJSON(viewModel.getInHistory().getValue().get(i)) +"\"}, ";
-            json += "{\"role\": \"assistant\", \"content\": \"" + complyJSON(viewModel.getOutHistory().getValue().get(i)) +"\"}";
+        ArrayList<String> inHistory = viewModel.getInHistory().getValue();
+        ArrayList<String> outHistory = viewModel.getOutHistory().getValue();
+        for (int i=0; i < inHistory.size(); i++) {
+            json += "{\"role\": \"user\", \"content\": \"" + complyJSON(inHistory.get(i)) +"\"}, ";
+            json += "{\"role\": \"assistant\", \"content\": \"" + complyJSON(outHistory.get(i)) +"\"}";
             // add comma if not last element
-            if (i != viewModel.getInHistory().getValue().size() - 1) {
+            if (i != inHistory.size() - 1) {
                 json += ",";
             }
         }
@@ -229,17 +220,17 @@ public class ChatFragment extends Fragment {
             String json = "";
 
             if (viewModel.getInHistory().getValue().size() > 0) {
-                json = getMessageWithHistory(chat);
+                json = prepMessageWithHistory(chat);
             }
             else {
-                json = getMessageWithoutHistory(chat);
+                json = prepMessageWithoutHistory(chat);
             }
 
             if (json.length() > 3900) {
                 getActivity().runOnUiThread(() -> {
                     MainActivity.showSnackbar("History data too large, will only not use it.\nTap Reset to clear history");
                 });
-                json = getMessageWithoutHistory(chat);
+                json = prepMessageWithoutHistory(chat);
             }
 
             System.out.println(json);
@@ -267,7 +258,8 @@ public class ChatFragment extends Fragment {
                     // end the thread
                      t.interrupt();
                     return;
-                } else
+                }
+                else
                     getActivity().runOnUiThread(() -> binding.chatInput.setError(null));
 
                 getActivity().runOnUiThread(() -> binding.progressBar.setVisibility(View.GONE));
@@ -275,6 +267,8 @@ public class ChatFragment extends Fragment {
                 String message = processResponse(res);
 
                 storeOutput(message);
+                // empty the chat input
+                getActivity().runOnUiThread(() -> binding.chatInput.setText(""));
             } catch (IOException e) {
                 getActivity().runOnUiThread(() -> binding.chatInput.setError("Something went wrong with the internet request/response"));
                 getActivity().runOnUiThread(() -> MainActivity.showSnackbar("Something went wrong with the internet request/response" + e.getMessage()));
@@ -332,7 +326,7 @@ public class ChatFragment extends Fragment {
             viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
             viewModel.getOutHistory().getValue().add(output);
 
-            binding.chatsRecyclerView.getAdapter().notifyItemChanged(0, binding.chatsRecyclerView.getAdapter().getItemCount());
+            binding.chatsRecyclerView.getAdapter().notifyItemInserted(binding.chatsRecyclerView.getAdapter().getItemCount());
 
             // Scroll to the bottom of the recycler view
             binding.chatsRecyclerView.smoothScrollToPosition(binding.chatsRecyclerView.getAdapter().getItemCount());

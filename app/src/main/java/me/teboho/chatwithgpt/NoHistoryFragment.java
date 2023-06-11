@@ -99,10 +99,6 @@ public class NoHistoryFragment extends Fragment {
         // get the viewmodel
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
-        viewModel.getChatInput().observe(getViewLifecycleOwner(), s -> {
-            binding.chatInput.setText(s);
-        });
-
         return view;
     }
     ChatsAdapter adapter;
@@ -119,11 +115,11 @@ public class NoHistoryFragment extends Fragment {
 
         viewModel.getInHistory().observe(getViewLifecycleOwner(), inChats -> {
             // update the recyclerview
-            adapter.notifyItemChanged(0, inChats.size());
+            adapter.notifyItemRangeChanged(0, inChats.size());
         });
         viewModel.getOutHistory().observe(getViewLifecycleOwner(), outChats -> {
             // update the recyclerview
-            adapter.notifyItemChanged(0, outChats.size());
+            adapter.notifyItemRangeChanged(0, outChats.size());
         });
 
         // scroll to bottom of recyclerview
@@ -267,7 +263,9 @@ public class NoHistoryFragment extends Fragment {
      * @param input the input to store in the view model
      */
     private void storeInput(String input) {
-        getActivity().runOnUiThread(() -> viewModel.getChatInput().setValue(input));
+        getActivity().runOnUiThread(() -> {
+            viewModel.getChatInput().setValue(input);
+        });
     }
 
     /**
@@ -282,7 +280,7 @@ public class NoHistoryFragment extends Fragment {
             viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
             viewModel.getOutHistory().getValue().add(output);
 
-            binding.chatsRecyclerView.getAdapter().notifyItemChanged(0, binding.chatsRecyclerView.getAdapter().getItemCount());
+            binding.chatsRecyclerView.getAdapter().notifyItemInserted(binding.chatsRecyclerView.getAdapter().getItemCount());
 
             // Scroll to the bottom of the recycler view
             binding.chatsRecyclerView.smoothScrollToPosition(binding.chatsRecyclerView.getAdapter().getItemCount());

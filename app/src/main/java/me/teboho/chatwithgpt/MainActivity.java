@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         noHistoryFragment = new NoHistoryFragment();
         settingsFragment = new SettingsFragment();
 
-        setFragment(noHistoryFragment);
+        setFragment(chatFragment);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFragment(Fragment fragment) {
-        getSupportActionBar().setTitle(fragment instanceof ChatFragment ? "Chat" : fragment instanceof NoHistoryFragment ? "No History" : "Settings");
+        getSupportActionBar().setTitle(fragment instanceof ChatFragment ? "Chat" : fragment instanceof NoHistoryFragment ? "Chat | Send 1 Get 1" : "Settings");
 
         getSupportFragmentManager()
                 .beginTransaction()
