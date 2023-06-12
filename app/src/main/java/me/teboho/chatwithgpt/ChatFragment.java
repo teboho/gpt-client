@@ -181,8 +181,9 @@ public class ChatFragment extends Fragment {
      * @author teboho
      */
     public void handleSendButton(View view) {
-        // Show loading indicator
+        // Show loading indicator using animation
         binding.progressBar.setVisibility(View.VISIBLE);
+
         // clear error
         binding.chatInput.setError(null);
         // get out of the chat input and remove the keyboard
