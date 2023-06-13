@@ -47,7 +47,7 @@ public class ChatFragment extends Fragment {
 
     // exposing the API key is not a good practice, but this is just a demo
     final static String OPENAI_API_KEY = BuildConfig.apikey;
-    final static String model = "gpt-3.5-turbo";
+    final static String model = "gpt-3.5-turbo-16k-0613";
     final static String url = "https://api.openai.com/v1/chat/completions";
     FragmentChatBinding binding;
     MainViewModel viewModel;
@@ -226,7 +226,8 @@ public class ChatFragment extends Fragment {
                 json = prepMessageWithoutHistory(chat);
             }
 
-            if (json.length() > 3900) {
+            // check if the json is too large: open ai just upped the context to 16000 tokens which I will pretend is 4000*4 characters
+            if (json.length() > 4000*4) {
                 getActivity().runOnUiThread(() -> {
                     MainActivity.showSnackbar("History data too large, will only not use it.\nTap Reset to clear history");
                 });
