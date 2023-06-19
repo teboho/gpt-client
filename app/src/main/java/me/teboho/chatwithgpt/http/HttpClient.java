@@ -1,5 +1,9 @@
 package me.teboho.chatwithgpt.http;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.teboho.chatwithgpt.BuildConfig;
@@ -8,9 +12,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
 
 public class HttpClient {
-    final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    final MediaType JSON = MediaType.get("application/json");
     String OPENAI_API_KEY = BuildConfig.apikey;
     public static HttpClient instance;
     OkHttpClient client;
@@ -33,12 +38,13 @@ public class HttpClient {
 
     public String post(String url, String jsonBody) {
         String responseString = "";
-        RequestBody body = RequestBody.create(jsonBody, JSON);
+        RequestBody body = RequestBody.create(jsonBody.getBytes(), JSON); // entering the body in bytes to supress charset error
         Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
                 .url(url)
                 .post(body)
                 .build();
+
         try (Response response = client.newCall(request).execute()) {
             System.out.println("Response: " + response);
             responseString = response.body().string();

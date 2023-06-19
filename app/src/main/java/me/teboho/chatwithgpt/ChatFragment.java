@@ -323,14 +323,17 @@ public class ChatFragment extends Fragment {
         getActivity().runOnUiThread(() -> {
             viewModel.getChatOutput().setValue(output);
 
+            // storing the item count so we can scroll to the bottom of the recycler view
+            int itemCount = binding.chatsRecyclerView.getAdapter().getItemCount();
+
             // Store the chat in the chat history
             viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
             viewModel.getOutHistory().getValue().add(output);
 
-            binding.chatsRecyclerView.getAdapter().notifyItemInserted(binding.chatsRecyclerView.getAdapter().getItemCount());
+            binding.chatsRecyclerView.getAdapter().notifyItemInserted(itemCount);
 
             // Scroll to the bottom of the recycler view
-            binding.chatsRecyclerView.smoothScrollToPosition(binding.chatsRecyclerView.getAdapter().getItemCount());
+            binding.chatsRecyclerView.smoothScrollToPosition(itemCount);
         });
     }
 
@@ -339,7 +342,7 @@ public class ChatFragment extends Fragment {
      * @param str the string to make json compliant
      * @return the json compliant string
      */
-    private String complyJSON(String str) {
+    public static String complyJSON(String str) {
         // make string json compliant
         String escaped = str.replace("\"", "\\"+"\"");
         escaped = escaped.replace("\n", "\\" + "n");

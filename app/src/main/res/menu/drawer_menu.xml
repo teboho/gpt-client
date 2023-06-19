@@ -16,4 +16,7 @@
         android:icon="@drawable/sms"
         android:title="No History"
         android:visible="false" />
+    <item
+        android:id="@+id/item_image_gen"
+        android:title="Dall·E" />
 </menu>

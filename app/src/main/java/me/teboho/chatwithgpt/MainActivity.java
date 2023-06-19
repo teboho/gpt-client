@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     ChatFragment chatFragment;
     NoHistoryFragment noHistoryFragment;
     SettingsFragment settingsFragment;
+    ImageGenFragment imageGenFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         chatFragment = new ChatFragment();
         noHistoryFragment = new NoHistoryFragment();
         settingsFragment = new SettingsFragment();
+        imageGenFragment = new ImageGenFragment();
 
         setFragment(chatFragment);
     }
@@ -145,6 +147,12 @@ public class MainActivity extends AppCompatActivity {
             setFragment(settingsFragment);
             return true;
         }
+
+        if (item.getItemId() == R.id.item_image_gen) {
+            setFragment(imageGenFragment);
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
