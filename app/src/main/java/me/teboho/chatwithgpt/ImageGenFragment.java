@@ -1,22 +1,29 @@
 package me.teboho.chatwithgpt;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Date;
 
 import me.teboho.chatwithgpt.http.HttpClient;
@@ -40,6 +47,7 @@ public class ImageGenFragment extends Fragment {
     TextInputEditText textInputEditText;
     MaterialButton generateBtn;
     ImageView imageView;
+    ProgressBar dallePB;
     HttpClient httpClient = HttpClient.getInstance();
     String url = "https://api.openai.com/v1/images/generations";
     Thread thread;
@@ -81,6 +89,7 @@ public class ImageGenFragment extends Fragment {
             textInputEditText.setError("Please enter a prompt");
             return;
         }
+        dallePB.setVisibility(View.VISIBLE);
 
         String jsonBody = "{" +
                 "\"prompt\": \"" + prompt + "\"," +
@@ -112,14 +121,37 @@ public class ImageGenFragment extends Fragment {
 
                     // Displaying the image
                     String finalImageUrl = imageUrl;
+                    URL url = new URL(finalImageUrl);
+                    Bitmap bmp = null;
+                    bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
+                    Bitmap finalBmp = bmp;
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             imageView.setImageDrawable(null);
                             imageView.setImageURI(null);
-                            imageView.setImageURI(Uri.parse(finalImageUrl));
 
-                            textInputEditText.setText(finalImageUrl);
+                            imageView.setImageBitmap(finalBmp);
+                            dallePB.setVisibility(View.GONE);
+
+
+                            imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                                @Override
+                                public void onCreateContextMenu(android.view.ContextMenu menu, View v, android.view.ContextMenu.ContextMenuInfo menuInfo) {
+                                    menu.add(0, 1, 0, "Save Image").setOnMenuItemClickListener(new android.view.MenuItem.OnMenuItemClickListener() {
+                                        @Override
+                                        public boolean onMenuItemClick(android.view.MenuItem item) {
+                                            imageView.setDrawingCacheEnabled(true);
+                                            Bitmap bitmap = imageView.getDrawingCache();
+                                            String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, prompt.toLowerCase().replace("\s", ""), prompt);
+                                            Uri uri = Uri.parse(path);
+                                            Toast.makeText(getActivity(), "Image Saved", Toast.LENGTH_SHORT).show();
+                                            return false;
+                                        }
+                                    });
+                                }
+                            });
                         }
                     });
                 } catch (Exception e) {
@@ -138,6 +170,7 @@ public class ImageGenFragment extends Fragment {
         textInputEditText = view.findViewById(R.id.promptTextInputEditText);
         generateBtn = view.findViewById(R.id.generateBtn);
         imageView = view.findViewById(R.id.imageView);
+        dallePB = view.findViewById(R.id.dallePB);
         generateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
