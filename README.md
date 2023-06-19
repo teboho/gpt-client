@@ -12,6 +12,8 @@ Usage via android studio will require that you enter own api key in the main fil
 1. User can send and receive messages to and from gpt assistant using the *Chat screen*
 2. User can change their custom name using the *Settings screen*
 3. User can alternate between dark mode and light mode using the *Settings screen*
+4. User can prompt for a dall-e generated image using the *Dall-E screen*
+5. User can save Dall-E generated image using context menu in the *Dall-E screen*.
 
 ## Installer
 [Click here to install to android](https://github.com/teboho/chatgpt-client/releases)
