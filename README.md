@@ -3,7 +3,7 @@ GPT Android FrontEnd
 Usage via android studio will require that you enter own api key in the main file in order to talk to the Open AI API
 
 ### Demo video
-[Youtube](https://youtu.be/WwaIEmMKMyM)
+[Youtube Demo](https://youtu.be/FVcP1DqXoGE)
 
 *This project is partly an experiment, as such, development is ongoing*
 
@@ -20,11 +20,15 @@ Usage via android studio will require that you enter own api key in the main fil
 
 ## Screenshots
 
-<img src="Screenshot_20230602_224035.png" width="200" height="400" alt="Screenshot1" /> <img src="Screenshot_20230602_224044.png" width="200" height="400" alt="Screenshot2" />  
+<img src="assets/img/ChatEmpty_Screenshot_20230620_181110.png" width="200" height="400" alt="Screenshot1" /> <img src="assets/img/ChatType_Screenshot_20230620_181518.png" width="200" height="400" alt="Screenshot2" />  
 
-<img src="Screenshot_20230602_224056.png" width="200" height="400" alt="Screenshot3" /> <img src="Screenshot_20230602_224312.png" width="200" height="400" alt="Screenshot4" />  
+<img src="assets/img/Chat_Screenshot_20230620_181600.png" width="200" height="400" alt="Screenshot3" /> <img src="assets/img/Chat_Screenshot_20230620_181615.png" width="200" height="400" alt="Screenshot4" />  
 
-<img src="Screenshot_20230604_230415.png" width="200" height="400" alt="Screenshot3" /> <img src="Screenshot_20230604_230514.png" width="200" height="400" alt="Screenshot4" />  
+<img src="assets/img/DrawerMenu_Screenshot_20230620_181201.png" width="200" height="400" alt="Screenshot3" /> <img src="assets/img/DrawerMenu_Screenshot_20230620_181625.png" width="200" height="400" alt="Screenshot4" />  
+
+<img src="assets/img/ImageGen_Screenshot_20230620_181434.png" width="200" height="400" alt="Screenshot3" /> <img src="assets/img/ImageGen_Screenshot_20230620_181756.png" width="200" height="400" alt="Screenshot4" />  
+
+<img src="assets/img/Settings_Screenshot_20230620_181212.png" width="200" height="400" alt="Screenshot3" /> <img src="assets/img/Settings_Screenshot_20230620_181633.png" width="200" height="400" alt="Screenshot4" />  
 
 
 

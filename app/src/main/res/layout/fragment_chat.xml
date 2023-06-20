@@ -15,7 +15,6 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="16dp"
-        app:boxStrokeColor="#0288D1"
         app:layout_constraintBottom_toTopOf="@+id/btn_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,7 +28,6 @@
             android:hint="Enter your request"
             android:maxLines="10"
             android:minLines="2"
-            android:textColor="#2979FF"
             android:textSize="16sp"
             android:typeface="sans" />
     </com.google.android.material.textfield.TextInputLayout>

@@ -20,7 +20,7 @@ public class HttpClient {
     final MediaType JSON = MediaType.get("application/json");
     String OPENAI_API_KEY = BuildConfig.apikey;
     public static HttpClient instance;
-    OkHttpClient client;
+    private OkHttpClient client;
 
     private HttpClient() {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -36,6 +36,10 @@ public class HttpClient {
             instance = new HttpClient();
         }
         return instance;
+    }
+
+    public static OkHttpClient getClient() {
+        return instance.client;
     }
 
     /**

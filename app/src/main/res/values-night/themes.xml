@@ -2,15 +2,17 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.ChatWithGPT" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <item name="colorPrimary">#393646</item>
-        <item name="colorPrimaryVariant">#4F4557</item>
-        <item name="colorOnPrimary">@color/black</item>
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#3b5998</item>
+        <item name="colorPrimaryVariant">#8b9dc3</item>
+        <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">#6D5D6E</item>
-        <item name="colorSecondaryVariant">#BAAE91</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSecondary">#3b5998</item>
+        <item name="colorSecondaryVariant">#8b9dc3</item>
+        <item name="colorOnSecondary">@color/white</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimary</item>
         <!-- Customize your theme here. -->
+        <item name="android:navigationBarColor" tools:targetApi="l">?attr/colorPrimary</item>
     </style>
 </resources>
