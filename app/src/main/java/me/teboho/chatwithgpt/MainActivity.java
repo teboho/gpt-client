@@ -178,10 +178,6 @@ public class MainActivity extends AppCompatActivity {
     private void setFragment(Fragment fragment) {
         getSupportActionBar().setTitle(fragment.getClass().getSimpleName().replace("Fragment", ""));
 
-        if (getSupportActionBar().getTitle().toString().toLowerCase().contains("settings"))
-            getSupportActionBar().setSubtitle("Chat With GPT by Teboho");
-        else getSupportActionBar().setSubtitle("Chat With GPT");
-
         getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.slide_in, R.anim.fade_out,
