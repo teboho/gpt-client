@@ -149,6 +149,7 @@ public class ImageGenFragment extends Fragment {
         Thread t = new Thread(() -> {
             // Downloading the image from the url
             byte[] imageBytes = httpClient.get(imageUrl);
+            // still slo
             Bitmap finalBmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);;//BitmapFactory.decodeStream(url.openConnection().getInputStream());
 
             getActivity().runOnUiThread(new Runnable() {
