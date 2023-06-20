@@ -1,5 +1,7 @@
 package me.teboho.chatwithgpt.http;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -34,6 +36,28 @@ public class HttpClient {
             instance = new HttpClient();
         }
         return instance;
+    }
+
+    /**
+     *
+     * @param url the url to make the request from
+     * @return a byte array of data returned from the endpoint
+     */
+    public byte[] get(String url) {
+        byte[] responseBytes = null;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build(); // default request method is GET...
+
+        try (Response response = client.newCall(request).execute()) {
+            responseBytes = response.body().bytes();
+        } catch(IOException ioe) {
+            Log.e("GET", ioe.getMessage());
+        }
+
+        return responseBytes;
+
     }
 
     public String post(String url, String jsonBody) {

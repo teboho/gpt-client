@@ -1,5 +1,6 @@
 package me.teboho.chatwithgpt;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -23,7 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Date;
 
@@ -108,13 +113,18 @@ public class ImageGenFragment extends Fragment {
                 try {
                     String response = httpClient.post(url, finalJsonBody);
                     Log.d("ImageGen", "run: " + response);
+
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(textInputEditText.getWindowToken(), 0);
+
                             Toast.makeText(getActivity(), "Preparing to show your image", Toast.LENGTH_SHORT).show();
                         }
                     });
-                    // Interpretting the response, json object with created, and data array of urls
+
+                    // Interpreting the response, json object with created, and data array of urls
                     ObjectMapper objectMapper = new ObjectMapper();
                     JsonNode jsonNode = null;
                     String imageUrl = "";
@@ -126,43 +136,48 @@ public class ImageGenFragment extends Fragment {
                     }
                     Log.d("", "run: " + imageUrl);
 
-                    // Displaying the image
-                    String finalImageUrl = imageUrl;
-                    URL url = new URL(finalImageUrl);
-                    Bitmap bmp = null;
-                    Bitmap finalBmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dallePB.setVisibility(View.GONE);
-                            imageView.setVisibility(View.VISIBLE);
-                            imageView.setAnimation(android.view.animation.AnimationUtils.loadAnimation(getActivity(), android.R.anim.fade_in));
-                            imageView.setImageBitmap(finalBmp);
-
-                            imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-                                @Override
-                                public void onCreateContextMenu(android.view.ContextMenu menu, View v, android.view.ContextMenu.ContextMenuInfo menuInfo) {
-                                    menu.add(0, 1, 0, "Save Image").setOnMenuItemClickListener(new android.view.MenuItem.OnMenuItemClickListener() {
-                                        @Override
-                                        public boolean onMenuItemClick(android.view.MenuItem item) {
-                                            Bitmap bitmap = finalBmp;
-                                            String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, prompt.toLowerCase().replace("\s", ""), prompt);
-                                            Uri uri = Uri.parse(path);
-                                            Toast.makeText(getActivity(), "Image Saved", Toast.LENGTH_SHORT).show();
-                                            return false;
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
+                    renderImage(imageUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
         thread.start();
+    }
+
+    private void renderImage(String imageUrl) {
+        Thread t = new Thread(() -> {
+            // Downloading the image from the url
+            byte[] imageBytes = httpClient.get(imageUrl);
+            Bitmap finalBmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);;//BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dallePB.setVisibility(View.GONE);
+                    imageView.setVisibility(View.VISIBLE);
+                    imageView.setAnimation(android.view.animation.AnimationUtils.loadAnimation(getActivity(), R.anim.image_fade_in));
+                    imageView.setImageBitmap(finalBmp);
+
+                    imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                        @Override
+                        public void onCreateContextMenu(android.view.ContextMenu menu, View v, android.view.ContextMenu.ContextMenuInfo menuInfo) {
+                            menu.add(0, 1, 0, "Save Image").setOnMenuItemClickListener(new android.view.MenuItem.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(android.view.MenuItem item) {
+                                    Bitmap bitmap = finalBmp;
+                                    String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, new Date().toString().replace("\s", "-"), textInputEditText.getText().toString());
+                                    Uri uri = Uri.parse(path);
+                                    Toast.makeText(getActivity(), "Image Saved", Toast.LENGTH_SHORT).show();
+                                    return false;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }, "Rendering image");
+        t.start();
     }
 
     @Override
