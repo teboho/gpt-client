@@ -22,6 +22,7 @@ import java.util.zip.Inflater;
  * create an instance of this fragment.
  */
 public class SettingsFragment extends PreferenceFragmentCompat {
+    public final String name = "Settings";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -99,5 +100,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
             return true;
         });
+
+        getActivity().setTitle("Settings");
     }
 }

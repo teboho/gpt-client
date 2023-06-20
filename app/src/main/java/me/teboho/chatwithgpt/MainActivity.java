@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         imageGenFragment = new ImageGenFragment();
 
         setFragment(chatFragment);
+        getSupportActionBar().setSubtitle("Chat With GPT");
     }
 
     @Override
@@ -175,7 +176,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFragment(Fragment fragment) {
-        getSupportActionBar().setTitle(fragment instanceof ChatFragment ? "Chat" : fragment instanceof NoHistoryFragment ? "Chat | Send 1 Get 1" : "Settings");
+        getSupportActionBar().setTitle(fragment.getClass().getSimpleName().replace("Fragment", ""));
+
+        if (getSupportActionBar().getTitle().toString().toLowerCase().contains("settings"))
+            getSupportActionBar().setSubtitle("Chat With GPT by Teboho");
+        else getSupportActionBar().setSubtitle("Chat With GPT");
 
         getSupportFragmentManager()
                 .beginTransaction()

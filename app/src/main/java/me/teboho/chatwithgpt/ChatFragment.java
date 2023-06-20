@@ -37,6 +37,8 @@ import okhttp3.Response;
  */
 public class ChatFragment extends Fragment {
 
+    public final String name = "Chat";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -99,6 +101,8 @@ public class ChatFragment extends Fragment {
 
         // get the viewmodel
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+
+        getActivity().setTitle("Chat");
 
         return view;
     }

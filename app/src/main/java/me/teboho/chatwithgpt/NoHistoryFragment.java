@@ -34,6 +34,7 @@ import okhttp3.Response;
  * create an instance of this fragment.
  */
 public class NoHistoryFragment extends Fragment {
+    public final String name = "No History";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

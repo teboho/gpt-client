@@ -2,6 +2,7 @@ package me.teboho.chatwithgpt;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ import me.teboho.chatwithgpt.http.HttpClient;
  * create an instance of this fragment.
  */
 public class ImageGenFragment extends Fragment {
+    public final String name = "Dall-E | Image Generation";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -105,8 +107,13 @@ public class ImageGenFragment extends Fragment {
             public void run() {
                 try {
                     String response = httpClient.post(url, finalJsonBody);
-                    Log.d("", "run: " + response);
-
+                    Log.d("ImageGen", "run: " + response);
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), "Preparing to show your image", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     // Interpretting the response, json object with created, and data array of urls
                     ObjectMapper objectMapper = new ObjectMapper();
                     JsonNode jsonNode = null;
@@ -123,18 +130,15 @@ public class ImageGenFragment extends Fragment {
                     String finalImageUrl = imageUrl;
                     URL url = new URL(finalImageUrl);
                     Bitmap bmp = null;
-                    bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                    Bitmap finalBmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
 
-                    Bitmap finalBmp = bmp;
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            imageView.setImageDrawable(null);
-                            imageView.setImageURI(null);
-
-                            imageView.setImageBitmap(finalBmp);
                             dallePB.setVisibility(View.GONE);
-
+                            imageView.setVisibility(View.VISIBLE);
+                            imageView.setAnimation(android.view.animation.AnimationUtils.loadAnimation(getActivity(), android.R.anim.fade_in));
+                            imageView.setImageBitmap(finalBmp);
 
                             imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                                 @Override
@@ -142,8 +146,7 @@ public class ImageGenFragment extends Fragment {
                                     menu.add(0, 1, 0, "Save Image").setOnMenuItemClickListener(new android.view.MenuItem.OnMenuItemClickListener() {
                                         @Override
                                         public boolean onMenuItemClick(android.view.MenuItem item) {
-                                            imageView.setDrawingCacheEnabled(true);
-                                            Bitmap bitmap = imageView.getDrawingCache();
+                                            Bitmap bitmap = finalBmp;
                                             String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, prompt.toLowerCase().replace("\s", ""), prompt);
                                             Uri uri = Uri.parse(path);
                                             Toast.makeText(getActivity(), "Image Saved", Toast.LENGTH_SHORT).show();
@@ -177,6 +180,7 @@ public class ImageGenFragment extends Fragment {
                 handleImageGen();
             }
         });
+
         return view;
     }
 }
