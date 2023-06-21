@@ -4,18 +4,20 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.ImageDecoder;
-import android.media.Image;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -30,8 +32,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -126,12 +126,13 @@ public class ImageGenFragment extends Fragment {
         }
         dallePB.setVisibility(View.VISIBLE);
 
-        String jsonBody = "{" +
+        String jsonBody =
+                "{" +
                 "\"prompt\": \"" + prompt + "\"," +
                 "\"n\": 1," +
                 "\"size\": \"1024x1024\"" +
                 "}";
-        //jsonBody = ChatFragment.complyJSON(jsonBody);
+        jsonBody = jsonBody.replace("\n", "\\n");
         Log.d("", "handleImageGen: " + jsonBody);
 
         String finalJsonBody = jsonBody;
@@ -210,7 +211,11 @@ public class ImageGenFragment extends Fragment {
     }
 
     private void renderImageStream(String imageUrl) {
-        getActivity().runOnUiThread(() -> tvCountdown.setVisibility(View.VISIBLE));
+        getActivity().runOnUiThread(() -> {
+            tvCountdown.setVisibility(View.VISIBLE);
+            imageView.setAnimation(android.view.animation.AnimationUtils.loadAnimation(getActivity(), R.anim.fade_out));
+            imageView.setVisibility(View.GONE);
+        });
         AtomicInteger count = new AtomicInteger(); // a thread safe sentinel because we modify it in a completely different thread
         Thread t = new Thread(() -> {
             // getting the byte stream from the http client
@@ -227,8 +232,8 @@ public class ImageGenFragment extends Fragment {
             long delay = 1000L;
             timer.schedule(task, 0, delay);
 
-
             Bitmap finalBmp = BitmapFactory.decodeStream(new BufferedInputStream(imageByteStream));
+
 
             getActivity().runOnUiThread(() -> tvCountdown.setVisibility(View.GONE));
             timer.cancel();
@@ -238,17 +243,25 @@ public class ImageGenFragment extends Fragment {
                 public void run() {
                     dallePB.setVisibility(View.GONE);
                     imageView.setVisibility(View.VISIBLE);
-                    imageView.setAnimation(android.view.animation.AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left));
+                    imageView.setAnimation(AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left));
                     imageView.setImageBitmap(finalBmp);
                     tvImageInfo.setText(String.format("Took %d seconds", count.get()));
                     tvImageInfo.setVisibility(View.VISIBLE);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        try {
+                            Color color = Color.valueOf(finalBmp.getPixel(finalBmp.getHeight() / 2, finalBmp.getWidth() / 2));
+                            imageView.setOutlineAmbientShadowColor(color.toArgb());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                         @Override
-                        public void onCreateContextMenu(android.view.ContextMenu menu, View v, android.view.ContextMenu.ContextMenuInfo menuInfo) {
-                            menu.add(0, 1, 0, "Save Image").setOnMenuItemClickListener(new android.view.MenuItem.OnMenuItemClickListener() {
+                        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+                            menu.add(0, 1, 0, "Save Image").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                 @Override
-                                public boolean onMenuItemClick(android.view.MenuItem item) {
+                                public boolean onMenuItemClick(MenuItem item) {
                                     Bitmap bitmap = finalBmp;
                                     String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, new Date().toString().replace("\s", "-"), textInputEditText.getText().toString());
                                     Uri uri = Uri.parse(path);

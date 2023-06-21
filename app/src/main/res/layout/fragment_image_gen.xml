@@ -10,8 +10,8 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="250dp"
-        android:layout_height="234dp"
+        android:layout_width="345dp"
+        android:layout_height="345dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/promptTextInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -71,7 +71,7 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:textColor="?colorPrimary"
-        android:textSize="34sp"
+        android:textSize="32sp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
