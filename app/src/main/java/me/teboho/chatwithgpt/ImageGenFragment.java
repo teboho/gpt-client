@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.ImageDecoder;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,6 +33,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import me.teboho.chatwithgpt.http.HttpClient;
 
@@ -55,6 +60,8 @@ public class ImageGenFragment extends Fragment {
     MaterialButton generateBtn;
     ImageView imageView;
     ProgressBar dallePB;
+    TextView tvCountdown;
+    TextView tvImageInfo;
     HttpClient httpClient = HttpClient.getInstance();
     String url = "https://api.openai.com/v1/images/generations";
     Thread thread;
@@ -88,6 +95,27 @@ public class ImageGenFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_image_gen, container, false);
+        textInputEditText = view.findViewById(R.id.promptTextInputEditText);
+        generateBtn = view.findViewById(R.id.generateBtn);
+        imageView = view.findViewById(R.id.imageView);
+        dallePB = view.findViewById(R.id.dallePB);
+        tvCountdown = view.findViewById(R.id.tvCountdown);
+        tvImageInfo = view.findViewById(R.id.tvImageInfo);
+        generateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                handleImageGen();
+            }
+        });
+
+        return view;
     }
 
     public void handleImageGen() {
@@ -136,7 +164,7 @@ public class ImageGenFragment extends Fragment {
                     }
                     Log.d("", "run: " + imageUrl);
 
-                    renderImage(imageUrl);
+                    renderImageStream(imageUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -181,22 +209,67 @@ public class ImageGenFragment extends Fragment {
         t.start();
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_image_gen, container, false);
-        textInputEditText = view.findViewById(R.id.promptTextInputEditText);
-        generateBtn = view.findViewById(R.id.generateBtn);
-        imageView = view.findViewById(R.id.imageView);
-        dallePB = view.findViewById(R.id.dallePB);
-        generateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                handleImageGen();
-            }
-        });
+    private void renderImageStream(String imageUrl) {
+        getActivity().runOnUiThread(() -> tvCountdown.setVisibility(View.VISIBLE));
+        AtomicInteger count = new AtomicInteger(); // a thread safe sentinel because we modify it in a completely different thread
+        Thread t = new Thread(() -> {
+            // getting the byte stream from the http client
+            InputStream imageByteStream = httpClient.getStream(imageUrl);
 
-        return view;
+            // this timer task will be used to increment the counter as BitMapFactory takes its time to decode the byte stream
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    getActivity().runOnUiThread(() -> tvCountdown.setText(String.format("%d", count.getAndIncrement())));
+                }
+            };
+            Timer timer = new Timer("Download Timer");
+            long delay = 1000L;
+            timer.schedule(task, 0, delay);
+
+
+            Bitmap finalBmp = BitmapFactory.decodeStream(new BufferedInputStream(imageByteStream));
+
+            getActivity().runOnUiThread(() -> tvCountdown.setVisibility(View.GONE));
+            timer.cancel();
+            // decoding the stream is done
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dallePB.setVisibility(View.GONE);
+                    imageView.setVisibility(View.VISIBLE);
+                    imageView.setAnimation(android.view.animation.AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left));
+                    imageView.setImageBitmap(finalBmp);
+                    tvImageInfo.setText(String.format("Took %d seconds", count.get()));
+                    tvImageInfo.setVisibility(View.VISIBLE);
+
+                    imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                        @Override
+                        public void onCreateContextMenu(android.view.ContextMenu menu, View v, android.view.ContextMenu.ContextMenuInfo menuInfo) {
+                            menu.add(0, 1, 0, "Save Image").setOnMenuItemClickListener(new android.view.MenuItem.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(android.view.MenuItem item) {
+                                    Bitmap bitmap = finalBmp;
+                                    String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, new Date().toString().replace("\s", "-"), textInputEditText.getText().toString());
+                                    Uri uri = Uri.parse(path);
+                                    Toast.makeText(getActivity(), "Image Saved", Toast.LENGTH_SHORT).show();
+                                    return false;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            try {
+                if (imageByteStream.available() < 0) {
+                    imageByteStream.close();
+                }
+            } catch (IOException e) {
+                Toast.makeText(getActivity(), "Could not close the stream", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        }, "Rendering image");
+        t.start();
     }
 }

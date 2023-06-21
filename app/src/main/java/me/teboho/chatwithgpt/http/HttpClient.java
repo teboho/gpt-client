@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import me.teboho.chatwithgpt.BuildConfig;
@@ -62,6 +63,28 @@ public class HttpClient {
 
         return responseBytes;
 
+    }
+
+    /**
+     *
+     * @param url the url to make the request from
+     * @return a byte array of data returned from the endpoint
+     */
+    public InputStream getStream(String url) {
+        InputStream byteStream = null;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build(); // default request method is GET...
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            byteStream = response.body().byteStream();
+        } catch(IOException ioe) {
+            Log.e("GET", ioe.getMessage());
+        }
+
+        return byteStream;
     }
 
     public String post(String url, String jsonBody) {

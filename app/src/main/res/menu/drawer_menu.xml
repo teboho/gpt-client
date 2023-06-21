@@ -5,7 +5,8 @@
     <item
         android:id="@+id/item_chat"
         android:icon="@android:drawable/stat_notify_chat"
-        android:title="Chat" />
+        android:title="Chat"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/item_settings"
         android:icon="@drawable/settings_48px_foreground"
@@ -19,5 +20,6 @@
     <item
         android:id="@+id/item_image_gen"
         android:icon="@android:drawable/picture_frame"
-        android:title="Dall·E" />
+        android:title="Dall·E"
+        app:showAsAction="ifRoom" />
 </menu>
