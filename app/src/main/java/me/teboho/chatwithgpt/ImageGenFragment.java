@@ -214,7 +214,7 @@ public class ImageGenFragment extends Fragment {
         getActivity().runOnUiThread(() -> {
             tvCountdown.setVisibility(View.VISIBLE);
             imageView.setAnimation(android.view.animation.AnimationUtils.loadAnimation(getActivity(), R.anim.fade_out));
-            imageView.setVisibility(View.GONE);
+            // imageView.setVisibility(View.INVISIBLE);
         });
         AtomicInteger count = new AtomicInteger(); // a thread safe sentinel because we modify it in a completely different thread
         Thread t = new Thread(() -> {

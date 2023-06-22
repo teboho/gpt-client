@@ -93,39 +93,31 @@ public class ChatFragment extends Fragment {
 
         binding = FragmentChatBinding.inflate(inflater, container, false);
 
+        // get the viewmodel
+        viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+
+        adapter = new ChatsAdapter(viewModel);
+        binding.chatsRV.setAdapter(adapter);
+        binding.chatsRV.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // scroll to bottom of recyclerview
+        binding.chatsRV.scrollToPosition(Objects.requireNonNull(binding.chatsRV.getAdapter()).getItemCount());
+
+        getActivity().setTitle("Chat");
+
+
         // handle the buttons
         binding.btnSend.setOnClickListener(this::handleSendButton);
         binding.btnReset.setOnClickListener(this::handleResetButton);
 
-        View view = binding.getRoot();
 
-        // get the viewmodel
-        viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
-        getActivity().setTitle("Chat");
-
-        return view;
+        return binding.getRoot();
     }
     ChatsAdapter adapter;
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        adapter = new ChatsAdapter(viewModel);
-        binding.chatsRecyclerView.setAdapter(adapter);
-        binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-//        viewModel.getInHistory().observe(getViewLifecycleOwner(), inChats -> {
-//            // update the recyclerview
-//            adapter.notifyItemRangeChanged(0, inChats.size());
-//        });
-//        viewModel.getOutHistory().observe(getViewLifecycleOwner(), outChats -> {
-//            // update the recyclerview
-//            adapter.notifyItemRangeChanged(0, outChats.size());
-//        });
-
-        // scroll to bottom of recyclerview
-        binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount());
     }
 
     public void handleResetButton(View view){
@@ -328,16 +320,16 @@ public class ChatFragment extends Fragment {
             viewModel.getChatOutput().setValue(output);
 
             // storing the item count so we can scroll to the bottom of the recycler view
-            int itemCount = binding.chatsRecyclerView.getAdapter().getItemCount();
+            int itemCount = binding.chatsRV.getAdapter().getItemCount();
 
             // Store the chat in the chat history
             viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
             viewModel.getOutHistory().getValue().add(output);
 
-            binding.chatsRecyclerView.getAdapter().notifyItemInserted(itemCount);
+            binding.chatsRV.getAdapter().notifyItemInserted(itemCount);
 
             // Scroll to the bottom of the recycler view
-            binding.chatsRecyclerView.smoothScrollToPosition(itemCount);
+            binding.chatsRV.smoothScrollToPosition(itemCount);
         });
     }
 

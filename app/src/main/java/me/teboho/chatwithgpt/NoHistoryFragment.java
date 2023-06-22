@@ -111,8 +111,8 @@ public class NoHistoryFragment extends Fragment {
         getActivity().setTitle("No History Mode");
 
         adapter = new ChatsAdapter(viewModel);
-        binding.chatsRecyclerView.setAdapter(adapter);
-        binding.chatsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.chatsRV.setAdapter(adapter);
+        binding.chatsRV.setLayoutManager(new LinearLayoutManager(getContext()));
 
         viewModel.getInHistory().observe(getViewLifecycleOwner(), inChats -> {
             // update the recyclerview
@@ -124,7 +124,7 @@ public class NoHistoryFragment extends Fragment {
         });
 
         // scroll to bottom of recyclerview
-        binding.chatsRecyclerView.scrollToPosition(Objects.requireNonNull(binding.chatsRecyclerView.getAdapter()).getItemCount());
+        binding.chatsRV.scrollToPosition(Objects.requireNonNull(binding.chatsRV.getAdapter()).getItemCount());
     }
 
     public void handleResetButton(View view){
@@ -281,10 +281,10 @@ public class NoHistoryFragment extends Fragment {
             viewModel.getInHistory().getValue().add(viewModel.getChatInput().getValue());
             viewModel.getOutHistory().getValue().add(output);
 
-            binding.chatsRecyclerView.getAdapter().notifyItemInserted(binding.chatsRecyclerView.getAdapter().getItemCount());
+            binding.chatsRV.getAdapter().notifyItemInserted(binding.chatsRV.getAdapter().getItemCount());
 
             // Scroll to the bottom of the recycler view
-            binding.chatsRecyclerView.smoothScrollToPosition(binding.chatsRecyclerView.getAdapter().getItemCount());
+            binding.chatsRV.smoothScrollToPosition(binding.chatsRV.getAdapter().getItemCount());
         });
     }
 
