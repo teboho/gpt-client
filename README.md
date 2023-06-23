@@ -16,7 +16,7 @@ Usage via android studio will require that you enter own api key in the main fil
 5. User can save Dall-E generated image using context menu in the *Dall-E screen*.
 
 ## Installer
-[Click here to install to android](https://github.com/teboho/chatgpt-client/releases)
+[Click here to install to android](https://github.com/teboho/gpt-client/releases)
 
 ## Screenshots
 
@@ -32,6 +32,6 @@ Usage via android studio will require that you enter own api key in the main fil
 
 
 
-> Github: [@teboho/chatpt-client](https://github.com/teboho/chatgpt-client)  
+> Github: [@teboho/gpt-client](https://github.com/teboho/gpt-client)  
 > &copy; 2023 teboho  
 > Using icons from https://dribbble.com/shots/8934409-Diversity-Avatars  
