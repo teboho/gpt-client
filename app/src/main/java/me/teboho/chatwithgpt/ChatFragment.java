@@ -327,19 +327,18 @@ public class ChatFragment extends Fragment {
             viewModel.getOutHistory().getValue().add(output);
 
             binding.chatsRV.getAdapter().notifyItemInserted(itemCount);
-
+            binding.chatsRV.refreshDrawableState();
             // Scroll to the bottom of the recycler view
             binding.chatsRV.smoothScrollToPosition(itemCount);
         });
     }
 
     /**
-     *
+     * Make string json compliant
      * @param str the string to make json compliant
      * @return the json compliant string
      */
     public static String complyJSON(String str) {
-        // make string json compliant
         String escaped = str.replace("\"", "\\"+"\"");
         escaped = escaped.replace("\n", "\\" + "n");
         escaped = escaped.replace("\r", "\\r");

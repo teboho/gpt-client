@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.palette.graphics.Palette;
 
 import android.provider.MediaStore;
 import android.util.Log;
@@ -175,7 +177,7 @@ public class ImageGenFragment extends Fragment {
     }
 
     private void renderImage(String imageUrl) {
-        Thread t = new Thread(() -> {
+        thread = new Thread(() -> {
             // Downloading the image from the url
             byte[] imageBytes = httpClient.get(imageUrl);
             // still slo
@@ -207,7 +209,7 @@ public class ImageGenFragment extends Fragment {
                 }
             });
         }, "Rendering image");
-        t.start();
+        thread.start();
     }
 
     private void renderImageStream(String imageUrl) {
@@ -234,7 +236,6 @@ public class ImageGenFragment extends Fragment {
 
             Bitmap finalBmp = BitmapFactory.decodeStream(new BufferedInputStream(imageByteStream));
 
-
             getActivity().runOnUiThread(() -> tvCountdown.setVisibility(View.GONE));
             timer.cancel();
             // decoding the stream is done
@@ -249,8 +250,17 @@ public class ImageGenFragment extends Fragment {
                     tvImageInfo.setVisibility(View.VISIBLE);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         try {
-                            Color color = Color.valueOf(finalBmp.getPixel(finalBmp.getHeight() / 2, finalBmp.getWidth() / 2));
-                            imageView.setOutlineAmbientShadowColor(color.toArgb());
+                            Palette palette = Palette.from(finalBmp).generate();
+                            Palette.Swatch swatch = palette.getDominantSwatch();
+                            if (swatch != null) {
+                                int color = swatch.getRgb();
+                                int textColor = swatch.getTitleTextColor();
+                                tvImageInfo.setTextColor(textColor);
+                                tvImageInfo.setBackgroundColor(color);
+                                // change the background color of the image view
+                                imageView.setBackgroundColor(color);
+                                imageView.setPadding(2, 2, 2, 2);
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

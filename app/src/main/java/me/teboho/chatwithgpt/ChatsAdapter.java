@@ -53,7 +53,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         chatByAssistant.setText(viewModel.getOutHistory().getValue().get(position));
         chatByUser.setText(viewModel.getInHistory().getValue().get(position));
 
-        holder.itemView.startAnimation(AnimationUtils.loadAnimation(holder.itemView.getContext(), android.R.anim.slide_in_left));
+        holder.itemView.startAnimation(AnimationUtils.loadAnimation(holder.itemView.getContext(), android.R.anim.fade_in));
     }
 
     @Override
