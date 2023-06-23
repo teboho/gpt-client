@@ -3,8 +3,7 @@ package me.teboho.chatwithgpt;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.squareup.picasso.Picasso;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -167,13 +167,33 @@ public class ImageGenFragment extends Fragment {
                     }
                     Log.d("", "run: " + imageUrl);
 
-                    renderImageStream(imageUrl);
+//                    renderImageStream(imageUrl);
+                    renderWithPicasso(imageUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
         thread.start();
+    }
+
+    private void renderWithPicasso(String imageUrl) {
+        getActivity().runOnUiThread(() -> {
+            dallePB.setVisibility(View.GONE);
+            imageView.setVisibility(View.VISIBLE);
+            Picasso.get()
+                    .load(imageUrl)
+                    .into(imageView);
+            imageView.setOnCreateContextMenuListener(
+                    (menu, v, menuInfo) ->
+                            menu.add(0, v.getId(), 0, "Save Image")
+                                .setOnMenuItemClickListener(item -> {
+                                    MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), ((BitmapDrawable)imageView.getDrawable()).getBitmap(), new Date().toString().replace("\s", "-"), "Dall-E Image");
+                                    Toast.makeText(getActivity(), "Saved Image", Toast.LENGTH_SHORT).show();
+                                    return false;
+                                })
+            );
+        });
     }
 
     private void renderImage(String imageUrl) {
@@ -295,4 +315,5 @@ public class ImageGenFragment extends Fragment {
         }, "Rendering image");
         t.start();
     }
+
 }
