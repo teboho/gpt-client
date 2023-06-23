@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,6 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
+import com.squareup.picasso.Target;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -181,9 +184,30 @@ public class ImageGenFragment extends Fragment {
         getActivity().runOnUiThread(() -> {
             dallePB.setVisibility(View.GONE);
             imageView.setVisibility(View.VISIBLE);
-            Picasso.get()
-                    .load(imageUrl)
-                    .into(imageView);
+            tvImageInfo.setVisibility(View.VISIBLE);
+
+            Target tag = new Target() {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    tvImageInfo.setText("Image loaded");
+                    imageView.setImageBitmap(bitmap);
+                }
+
+                @Override
+                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                    tvImageInfo.setText("Image failed to load");
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                    tvImageInfo.setText("Image loading...");
+                }
+            };
+
+            imageView.setTag(tag);
+
+            Picasso.get().load(imageUrl).into(tag);
+
             imageView.setOnCreateContextMenuListener(
                     (menu, v, menuInfo) ->
                             menu.add(0, v.getId(), 0, "Save Image")
