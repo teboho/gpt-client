@@ -15,9 +15,6 @@ Usage via android studio will require that you enter own api key in the main fil
 4. User can prompt for a dall-e generated image using the *Dall-E screen*
 5. User can save Dall-E generated image using context menu in the *Dall-E screen*.
 
-## Installer
-[Click here to install to android](https://github.com/teboho/gpt-client/releases)
-
 ## Screenshots
 
 <img src="assets/img/ChatEmpty_Screenshot_20230620_181110.png" width="200" height="400" alt="Screenshot1" /> <img src="assets/img/ChatType_Screenshot_20230620_181518.png" width="200" height="400" alt="Screenshot2" />  
